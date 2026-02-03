@@ -4,6 +4,7 @@ import CharacterList from './ui/components/CharacterList';
 import CharacterEditor from './ui/components/CharacterEditor';
 import ConfirmDialog from './ui/components/ConfirmDialog';
 import DiceRoller from './ui/components/DiceRoller';
+import Toast from './ui/components/Toast';
 import { useWorldState } from './state/useWorldState';
 
 const App: React.FC = () => {
@@ -12,6 +13,7 @@ const App: React.FC = () => {
     setCharacters,
     bank,
     setBank,
+    saveStatus,
     charactersRef,
     bankRef,
     exportData,
@@ -23,6 +25,45 @@ const App: React.FC = () => {
 
   // Dialog State
   const [charToDelete, setCharToDelete] = useState<string | null>(null);
+
+  // Toast / Undo
+  const [toast, setToast] = useState<{
+    isOpen: boolean;
+    message: string;
+    actionLabel?: string;
+    onAction?: () => void;
+    tone?: 'default' | 'danger' | 'success';
+  }>({ isOpen: false, message: '' });
+
+  const takeWorldSnapshot = useCallback(() => {
+    return structuredClone({
+      characters: charactersRef.current,
+      bank: bankRef.current,
+    });
+  }, [bankRef, charactersRef]);
+
+  const restoreWorldSnapshot = useCallback(
+    (snapshot: { characters: Character[]; bank: Item[] }) => {
+      setCharacters(snapshot.characters);
+      setBank(snapshot.bank);
+    },
+    [setBank, setCharacters]
+  );
+
+  const runUndoable = useCallback(
+    (action: () => void, message: string, tone: 'default' | 'danger' | 'success' = 'default') => {
+      const snapshot = takeWorldSnapshot();
+      action();
+      setToast({
+        isOpen: true,
+        message,
+        tone,
+        actionLabel: 'Undo',
+        onAction: () => restoreWorldSnapshot(snapshot),
+      });
+    },
+    [restoreWorldSnapshot, takeWorldSnapshot]
+  );
 
   // --- Import / Export Handlers ---
   const handleExportData = useCallback(() => {
@@ -71,19 +112,43 @@ const App: React.FC = () => {
 
   const executeDeleteCharacter = useCallback(() => {
     if (!charToDelete) return;
-    setCharacters((prev) => prev.filter((c) => c.id !== charToDelete));
-    if (editingCharId === charToDelete) {
-      setEditingCharId(null);
-      setView('list');
-    }
-    setCharToDelete(null);
-  }, [charToDelete, editingCharId, setCharacters]);
 
-  const handleUpdateCharacter = useCallback(
+    const deletedChar = charactersRef.current.find((c) => c.id === charToDelete);
+
+    runUndoable(
+      () => {
+        setCharacters((prev) => prev.filter((c) => c.id !== charToDelete));
+        if (editingCharId === charToDelete) {
+          setEditingCharId(null);
+          setView('list');
+        }
+      },
+      deletedChar ? `Deleted “${deletedChar.name || 'Character'}”.` : 'Character deleted.',
+      'danger'
+    );
+
+    setCharToDelete(null);
+  }, [charToDelete, charactersRef, editingCharId, runUndoable, setCharacters]);
+
+  const applyUpdateCharacter = useCallback(
     (updatedChar: Character) => {
       setCharacters((prev) => prev.map((c) => (c.id === updatedChar.id ? updatedChar : c)));
     },
     [setCharacters]
+  );
+
+  const handleUpdateCharacter = useCallback(
+    (updatedChar: Character) => {
+      applyUpdateCharacter(updatedChar);
+    },
+    [applyUpdateCharacter]
+  );
+
+  const handleUpdateCharacterUndoable = useCallback(
+    (updatedChar: Character, message: string) => {
+      runUndoable(() => applyUpdateCharacter(updatedChar), message);
+    },
+    [applyUpdateCharacter, runUndoable]
   );
 
   // --- CORE TRANSFER LOGIC ---
@@ -160,6 +225,8 @@ const App: React.FC = () => {
         return;
       }
 
+      const snapshot = takeWorldSnapshot();
+
       const itemToMove = sourceLoc.item;
       const actualQty = Math.min(itemToMove.count, quantity); // Prevent moving more than we have
 
@@ -202,8 +269,21 @@ const App: React.FC = () => {
       // 5. Commit State
       setCharacters(nextCharacters);
       setBank(nextBank);
+
+      const targetName =
+        targetOwnerId === BANK_ID
+          ? 'The Bank'
+          : charactersRef.current.find((c) => c.id === targetOwnerId)?.name || 'Character';
+
+      setToast({
+        isOpen: true,
+        message: `Moved ${actualQty}× ${itemToMove.name} to ${targetName}.`,
+        tone: 'default',
+        actionLabel: 'Undo',
+        onAction: () => restoreWorldSnapshot(snapshot),
+      });
     },
-    [bankRef, charactersRef, setBank, setCharacters]
+    [bankRef, charactersRef, restoreWorldSnapshot, setBank, setCharacters, takeWorldSnapshot]
   );
 
   // Wrapper for InventoryManager
@@ -279,7 +359,9 @@ const App: React.FC = () => {
         <CharacterEditor
           character={activeCharacter}
           otherCharacters={characters.filter((c) => c.id !== activeCharacter.id)}
+          saveStatus={saveStatus}
           onUpdate={handleUpdateCharacter}
+          onUpdateUndoable={handleUpdateCharacterUndoable}
           onBack={() => setView('list')}
           onTransferItem={handleTransferItem}
         />
@@ -296,6 +378,18 @@ const App: React.FC = () => {
       />
 
       <DiceRoller />
+
+      <Toast
+        isOpen={toast.isOpen}
+        message={toast.message}
+        tone={toast.tone}
+        action={
+          toast.onAction && toast.actionLabel
+            ? { label: toast.actionLabel, onAction: toast.onAction }
+            : undefined
+        }
+        onClose={() => setToast((t) => ({ ...t, isOpen: false }))}
+      />
     </div>
   );
 };

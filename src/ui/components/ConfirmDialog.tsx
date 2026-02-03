@@ -24,6 +24,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
   const confirmBtnRef = useRef<HTMLButtonElement>(null);
+  const cancelBtnRef = useRef<HTMLButtonElement>(null);
+  const lastActiveRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -34,13 +36,19 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     };
 
     if (isOpen) {
+      lastActiveRef.current = document.activeElement as HTMLElement;
       document.addEventListener('keydown', handleKeyDown);
-      // Focus management: focus dangerous action or cancel based on safety
-      setTimeout(() => confirmBtnRef.current?.focus(), 50);
+      // Focus management: focus cancel by default (safer), confirm for non-danger actions
+      const target = isDangerous ? cancelBtnRef.current : confirmBtnRef.current;
+      setTimeout(() => target?.focus(), 0);
     }
-    
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onCancel]);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      // Restore focus when closing
+      lastActiveRef.current?.focus?.();
+    };
+  }, [isDangerous, isOpen, onCancel]);
 
   if (!isOpen) return null;
 
@@ -67,6 +75,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             
             <div className="flex gap-3 w-full">
                 <button 
+                    ref={cancelBtnRef}
                     onClick={onCancel}
                     className="flex-1 px-4 py-2.5 rounded-lg border border-slate-700 text-slate-300 font-bold hover:bg-slate-800 transition-colors focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 >

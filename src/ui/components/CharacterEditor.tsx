@@ -8,17 +8,21 @@ import { ArrowLeft, Shield, Heart, Skull, Zap, Trophy, CloudLightning, Calculato
 
 interface CharacterEditorProps {
   character: Character;
-  otherCharacters: Character[]; 
+  otherCharacters: Character[];
+  saveStatus?: 'saving' | 'saved' | 'error';
   onUpdate: (char: Character) => void;
+  onUpdateUndoable?: (char: Character, message: string) => void;
   onBack: () => void;
   onTransferItem: (targetCharId: string, item: Item) => void;
 }
 
-const CharacterEditor: React.FC<CharacterEditorProps> = ({ 
-  character, 
+const CharacterEditor: React.FC<CharacterEditorProps> = ({
+  character,
   otherCharacters,
-  onUpdate, 
-  onBack, 
+  saveStatus = 'saved',
+  onUpdate,
+  onUpdateUndoable,
+  onBack,
   onTransferItem,
 }) => {
   const [showXPModal, setShowXPModal] = useState(false);
@@ -51,6 +55,14 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
 
   const handleInventoryChange = (newContainers: Container[]) => {
     onUpdate({ ...character, containers: newContainers });
+  };
+
+  const handleInventoryChangeUndoable = (newContainers: Container[], message: string) => {
+    if (onUpdateUndoable) {
+      onUpdateUndoable({ ...character, containers: newContainers }, message);
+    } else {
+      onUpdate({ ...character, containers: newContainers });
+    }
   };
 
   // Helper for quick buttons
@@ -92,9 +104,26 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
 
             <div className="flex items-center gap-3">
                 {/* Auto-Save Indicator */}
-                <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest text-emerald-500/80 mr-4">
-                    <CloudLightning className="w-3 h-3" />
-                    <span className="hidden sm:inline">Auto-Save Active</span>
+                <div
+                  className={`flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest mr-4 ${
+                    saveStatus === 'saving'
+                      ? 'text-amber-400/90'
+                      : saveStatus === 'error'
+                        ? 'text-red-400/90'
+                        : 'text-emerald-400/80'
+                  }`}
+                  title={
+                    saveStatus === 'saving'
+                      ? 'Saving…'
+                      : saveStatus === 'error'
+                        ? 'Save error'
+                        : 'Saved'
+                  }
+                >
+                  <CloudLightning className={`w-3 h-3 ${saveStatus === 'saving' ? 'animate-pulse' : ''}`} />
+                  <span className="hidden sm:inline">
+                    {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'error' ? 'Save Error' : 'Saved'}
+                  </span>
                 </div>
 
                 <div className="hidden md:flex items-center gap-2 bg-slate-900/50 rounded-lg px-3 py-1.5 border border-white/5">
@@ -383,7 +412,8 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                  <InventoryManager 
                     containers={character.containers || []} 
                     otherCharacters={otherCharacters}
-                    onChange={handleInventoryChange} 
+                    onChange={handleInventoryChange}
+                    onUndoableChange={handleInventoryChangeUndoable}
                     onTransferItem={onTransferItem}
                 />
             </div>

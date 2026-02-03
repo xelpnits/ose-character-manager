@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X, Trophy, Users, Plus, ArrowRight, UserMinus } from 'lucide-react';
 
 interface XPCalculatorModalProps {
@@ -15,7 +15,11 @@ const XPCalculatorModal: React.FC<XPCalculatorModalProps> = ({
   onClose 
 }) => {
   const [mode, setMode] = useState<'manual' | 'calculator'>('calculator');
-  
+
+  const lastActiveRef = useRef<HTMLElement | null>(null);
+  const manualInputRef = useRef<HTMLInputElement>(null);
+  const calcInputRef = useRef<HTMLInputElement>(null);
+
   // Manual State
   const [manualAdd, setManualAdd] = useState<string>('');
   
@@ -33,6 +37,25 @@ const XPCalculatorModal: React.FC<XPCalculatorModalProps> = ({
   const previewXP = mode === 'manual' 
     ? currentXP + (parseInt(manualAdd) || 0)
     : currentXP + calcShare;
+
+  useEffect(() => {
+    lastActiveRef.current = document.activeElement as HTMLElement;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    setTimeout(() => {
+      if (mode === 'manual') manualInputRef.current?.focus();
+      else calcInputRef.current?.focus();
+    }, 0);
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      lastActiveRef.current?.focus?.();
+    };
+  }, [mode, onClose]);
 
   const handleSave = () => {
     onSave(previewXP);
@@ -88,11 +111,11 @@ const XPCalculatorModal: React.FC<XPCalculatorModalProps> = ({
                         <div className="relative">
                             <Plus className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
                             <input 
+                                ref={manualInputRef}
                                 type="number" 
                                 value={manualAdd} 
                                 onChange={e => setManualAdd(e.target.value)}
                                 placeholder="0"
-                                autoFocus
                                 className="w-full bg-slate-950 border border-slate-700 py-3 pl-10 pr-4 rounded-lg text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 font-mono text-lg"
                             />
                         </div>
@@ -106,11 +129,11 @@ const XPCalculatorModal: React.FC<XPCalculatorModalProps> = ({
                         <label className="block text-[10px] uppercase text-slate-500 font-bold mb-2">Total Session XP (Gold + Monsters)</label>
                         <div className="relative">
                             <input 
+                                ref={calcInputRef}
                                 type="number" 
                                 value={totalSessionXP} 
                                 onChange={e => setTotalSessionXP(e.target.value)}
                                 placeholder="0"
-                                autoFocus
                                 className="w-full bg-slate-950 border border-slate-700 p-3 rounded-lg text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 font-mono text-lg"
                             />
                         </div>

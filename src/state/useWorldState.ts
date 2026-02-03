@@ -8,10 +8,14 @@ import {
   saveToLocalStorage,
 } from './persistence';
 
+export type SaveStatus = 'saving' | 'saved' | 'error';
+
 export function useWorldState() {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [bank, setBank] = useState<Item[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
+  const [saveError, setSaveError] = useState<unknown>(null);
 
   // Refs for synchronous access (autosave/unload)
   const charactersRef = useRef(characters);
@@ -28,14 +32,28 @@ export function useWorldState() {
     setCharacters(loadedChars);
     setBank(loadedBank);
     setIsLoaded(true);
+    setSaveStatus('saved');
   }, []);
 
   // Debounced auto-save
   useEffect(() => {
     if (!isLoaded) return;
+
+    // Any world change marks us dirty immediately.
+    setSaveStatus('saving');
+    setSaveError(null);
+
     const handler = setTimeout(() => {
-      saveToLocalStorage(characters, bank);
+      try {
+        saveToLocalStorage(characters, bank);
+        setSaveStatus('saved');
+      } catch (err) {
+        console.error(err);
+        setSaveError(err);
+        setSaveStatus('error');
+      }
     }, DEBOUNCE_DELAY_MS);
+
     return () => clearTimeout(handler);
   }, [characters, bank, isLoaded]);
 
@@ -85,6 +103,8 @@ export function useWorldState() {
     bank,
     setBank,
     isLoaded,
+    saveStatus,
+    saveError,
     charactersRef,
     bankRef,
     exportData,

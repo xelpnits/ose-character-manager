@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Item } from '../../types';
 import { Layers, ArrowRight } from 'lucide-react';
 
@@ -18,6 +18,26 @@ const StackSplitDialog: React.FC<StackSplitDialogProps> = ({
   onCancel 
 }) => {
   const [count, setCount] = useState<number>(1);
+  const lastActiveRef = useRef<HTMLElement | null>(null);
+  const initialFocusRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    lastActiveRef.current = document.activeElement as HTMLElement;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCancel();
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    setTimeout(() => initialFocusRef.current?.focus(), 0);
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      lastActiveRef.current?.focus?.();
+    };
+  }, [isOpen, onCancel]);
 
   if (!isOpen || !item) return null;
 
@@ -45,6 +65,7 @@ const StackSplitDialog: React.FC<StackSplitDialogProps> = ({
                 </button>
                 <div className="text-center">
                     <input 
+                        ref={initialFocusRef}
                         type="number" 
                         min="1" 
                         max={max} 

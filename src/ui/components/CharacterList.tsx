@@ -5,7 +5,7 @@ import StackSplitDialog from './StackSplitDialog';
 import ImportExportControls from './ImportExportControls';
 import { getCategoryIcon, getClassIcon } from '../../utils'; 
 import { BANK_ID } from '../../types';
-import { Plus, Trash2, ArrowRight, Shield, Heart, Crown, Coins, Sparkles, Users, PackageOpen, CheckCircle, Search, Box, Zap, HelpCircle, Landmark, Filter, Backpack, ChevronDown, ChevronRight, Activity } from 'lucide-react';
+import { Plus, Trash2, ArrowRight, Shield, Heart, Crown, Coins, Sparkles, Users, PackageOpen, CheckCircle, Search, Box, Zap, HelpCircle, Landmark, Filter, Backpack, ChevronDown, ChevronRight, Activity, MoreHorizontal } from 'lucide-react';
 
 interface CharacterListProps {
   characters: Character[];
@@ -93,6 +93,9 @@ const GlobalAddItemModal: React.FC<{
     const [selectedContainerId, setSelectedContainerId] = useState<string>('');
     const [itemName, setItemName] = useState('');
     const [itemCount, setItemCount] = useState(1);
+
+    const lastActiveRef = useRef<HTMLElement | null>(null);
+    const initialFocusRef = useRef<HTMLInputElement>(null);
     
     const activeContainers: {id: string, name: string}[] = selectedCharId === BANK_ID 
         ? [{ id: 'VAULT', name: 'Vault' }] 
@@ -101,6 +104,19 @@ const GlobalAddItemModal: React.FC<{
     useEffect(() => {
         if (activeContainers.length > 0) setSelectedContainerId(activeContainers[0].id);
     }, [selectedCharId]);
+
+    useEffect(() => {
+        lastActiveRef.current = document.activeElement as HTMLElement;
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+        document.addEventListener('keydown', onKeyDown);
+        setTimeout(() => initialFocusRef.current?.focus(), 0);
+        return () => {
+            document.removeEventListener('keydown', onKeyDown);
+            lastActiveRef.current?.focus?.();
+        };
+    }, [onClose]);
 
     const handleSubmit = () => {
         if (!itemName.trim()) return;
@@ -148,12 +164,12 @@ const GlobalAddItemModal: React.FC<{
                         <div className="col-span-2">
                             <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Item Name</label>
                             <input 
+                                ref={initialFocusRef}
                                 type="text" 
                                 value={itemName}
                                 onChange={e => setItemName(e.target.value)}
                                 placeholder="Torch, Rope..."
                                 className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-emerald-500"
-                                autoFocus
                             />
                         </div>
                         <div>
@@ -241,15 +257,19 @@ const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, onSelec
       setShowClaimConfirm(false);
   };
 
-  const handleItemContextMenu = (e: React.MouseEvent, item: any) => {
-      e.preventDefault();
+  const openItemMenuAt = (x: number, y: number, item: any) => {
       setContextMenu({
-          x: e.clientX,
-          y: e.clientY,
+          x,
+          y,
           item: item,
           sourceCharId: item.charId,
           sourceContainerId: item.containerId
       });
+  };
+
+  const handleItemContextMenu = (e: React.MouseEvent, item: any) => {
+      e.preventDefault();
+      openItemMenuAt(e.clientX, e.clientY, item);
   };
 
   const initiateMove = (targetId: string) => {
@@ -540,14 +560,32 @@ const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, onSelec
                                                 <div className="col-span-2 text-center font-mono text-slate-400 text-sm">
                                                     {item.count}
                                                 </div>
-                                                <div className="col-span-5 text-right flex flex-col items-end">
-                                                    <span className={`text-xs font-bold flex items-center gap-1 ${item.isBank ? 'text-amber-500' : 'text-white'}`}>
-                                                        {item.isBank ? <Landmark className="w-3 h-3" /> : <Users className="w-3 h-3 text-emerald-500" />} 
-                                                        {item.charName}
-                                                    </span>
-                                                    <span className="text-[10px] text-slate-500 flex items-center gap-1">
-                                                        {item.containerName}
-                                                    </span>
+                                                <div className="col-span-5 text-right flex items-start justify-end gap-2">
+                                                    <div className="flex flex-col items-end">
+                                                        <span className={`text-xs font-bold flex items-center gap-1 ${item.isBank ? 'text-amber-500' : 'text-white'}`}>
+                                                            {item.isBank ? <Landmark className="w-3 h-3" /> : <Users className="w-3 h-3 text-emerald-500" />} 
+                                                            {item.charName}
+                                                        </span>
+                                                        <span className="text-[10px] text-slate-500 flex items-center gap-1">
+                                                            {item.containerName}
+                                                        </span>
+                                                    </div>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+                                                            openItemMenuAt(rect.right, rect.bottom, item);
+                                                        }}
+                                                        onMouseDown={(e) => e.stopPropagation()}
+                                                        className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity p-1.5 rounded border border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10"
+                                                        title="Actions"
+                                                        aria-label="Actions"
+                                                    >
+                                                        <MoreHorizontal className="w-4 h-4" />
+                                                    </button>
                                                 </div>
                                             </div>
                                         ))}

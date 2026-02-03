@@ -24,13 +24,15 @@ import {
   HelpCircle,
   AlertTriangle,
   Archive,
-  Layers
+  Layers,
+  MoreHorizontal
 } from 'lucide-react';
 
 interface InventoryManagerProps {
   containers: Container[];
   otherCharacters: Character[];
   onChange: (containers: Container[]) => void;
+  onUndoableChange?: (containers: Container[], message: string) => void;
   onTransferItem: (targetCharId: string, item: Item) => void;
 }
 
@@ -124,6 +126,25 @@ const ItemDetailModal: React.FC<{
     maxCharges: item.maxCharges || 0
   });
 
+  const lastActiveRef = useRef<HTMLElement | null>(null);
+  const initialFocusRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    lastActiveRef.current = document.activeElement as HTMLElement;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    setTimeout(() => initialFocusRef.current?.focus(), 0);
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      lastActiveRef.current?.focus?.();
+    };
+  }, [onClose]);
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
       <div className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden ring-1 ring-white/10">
@@ -140,6 +161,7 @@ const ItemDetailModal: React.FC<{
           <div>
             <label className="block text-[10px] uppercase text-slate-500 font-bold mb-2">Item Name</label>
             <input 
+              ref={initialFocusRef}
               type="text" 
               value={data.name} 
               onChange={e => setData({...data, name: e.target.value})}
@@ -321,7 +343,7 @@ const ItemDetailModal: React.FC<{
 };
 
 // --- Main Component ---
-const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCharacters, onChange, onTransferItem }) => {
+const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCharacters, onChange, onUndoableChange, onTransferItem }) => {
   const [draggedItem, setDraggedItem] = useState<{ itemId: string, sourceContainerId: string } | null>(null);
   const [dragOverContainerId, setDragOverContainerId] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<{ containerId: string, item: Item } | null>(null);
@@ -332,10 +354,22 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
   const totalItems = calculateTotalItems(containers);
   const totalWeight = calculateTotalWeight(containers);
 
+  const commitContainers = (next: Container[], message?: string) => {
+    if (message && onUndoableChange) {
+      onUndoableChange(next, message);
+    } else {
+      onChange(next);
+    }
+  };
+
   // --- Handlers ---
+  const openContextMenuAt = (x: number, y: number, itemId: string, containerId: string) => {
+    setContextMenu({ x, y, itemId, containerId });
+  };
+
   const handleContextMenu = (e: React.MouseEvent, itemId: string, containerId: string) => {
     e.preventDefault();
-    setContextMenu({ x: e.clientX, y: e.clientY, itemId, containerId });
+    openContextMenuAt(e.clientX, e.clientY, itemId, containerId);
   };
 
   const handleAddContainer = (type: ContainerType = 'carried') => {
@@ -357,7 +391,8 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
     if(!containerToDelete) return;
      // Strict filter creating a new array ref to ensure React updates
      const newContainers = containers.filter(c => c.id !== containerToDelete);
-     onChange(newContainers);
+     const deletedName = containers.find(c => c.id === containerToDelete)?.name || 'Container';
+     commitContainers(newContainers, `Deleted container “${deletedName}”.`);
      setContainerToDelete(null);
   };
 
@@ -411,12 +446,22 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
 
   const handleDeleteItem = () => {
     if (!contextMenu) return;
-    onChange(containers.map(c => {
-      if (c.id === contextMenu.containerId) {
-        return { ...c, items: c.items.filter(i => i.id !== contextMenu.itemId) };
-      }
-      return c;
-    }));
+
+    const itemName =
+      containers
+        .find((c) => c.id === contextMenu.containerId)
+        ?.items.find((i) => i.id === contextMenu.itemId)?.name || 'Item';
+
+    commitContainers(
+      containers.map((c) => {
+        if (c.id === contextMenu.containerId) {
+          return { ...c, items: c.items.filter((i) => i.id !== contextMenu.itemId) };
+        }
+        return c;
+      }),
+      `Deleted “${itemName}”.`
+    );
+
     setContextMenu(null);
   };
 
@@ -435,7 +480,9 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
         }
         return c;
      });
-     onChange(newContainers);
+     const itemName = item.name || 'Item';
+     const targetName = containers.find(c => c.id === targetId)?.name || 'Container';
+     commitContainers(newContainers, `Moved “${itemName}” to “${targetName}”.`);
      setContextMenu(null);
   };
 
@@ -507,7 +554,9 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
       return c;
     });
 
-    onChange(newContainers);
+    const itemName = itemToMove.name || 'Item';
+    const targetName = containers.find(c => c.id === targetContainerId)?.name || 'Container';
+    commitContainers(newContainers, `Moved “${itemName}” to “${targetName}”.`);
     setDraggedItem(null);
   };
 
@@ -673,7 +722,7 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
                                         ${draggedItem?.itemId === item.id ? 'opacity-30 border-dashed border-slate-600' : 'hover:-translate-y-0.5'}
                                     `}
                                 >
-                                    <div className="flex justify-between items-start">
+                                    <div className="flex justify-between items-start gap-2">
                                         <div className="flex flex-col overflow-hidden">
                                             <span className={`font-semibold text-sm truncate pr-2 ${item.isMagical ? 'text-purple-200' : item.isUnidentified ? 'text-cyan-200' : 'text-slate-200'}`}>
                                                 {item.name}
@@ -684,11 +733,30 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
                                                 </span>
                                             )}
                                         </div>
-                                        {item.count > 1 && (
-                                            <span className="text-[10px] font-mono bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-500/30 flex-shrink-0">
-                                                x{item.count}
-                                            </span>
-                                        )}
+
+                                        <div className="flex items-start gap-1 flex-shrink-0">
+                                            {item.count > 1 && (
+                                                <span className="text-[10px] font-mono bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-500/30">
+                                                    x{item.count}
+                                                </span>
+                                            )}
+
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+                                                openContextMenuAt(rect.right, rect.bottom, item.id, container.id);
+                                              }}
+                                              onMouseDown={(e) => e.stopPropagation()}
+                                              className="px-2 py-1 rounded border border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                                              title="Actions"
+                                              aria-label="Actions"
+                                            >
+                                              <MoreHorizontal className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                     
                                     <div className="flex flex-wrap gap-1.5 mt-2">
