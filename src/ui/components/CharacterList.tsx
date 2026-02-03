@@ -431,18 +431,14 @@ const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, onSelec
 
                         {/* Attributes Mini-View */}
                         <div className="grid grid-cols-6 gap-1">
-                            {(['STR', 'INT', 'WIS', 'DEX', 'CON', 'CHA'] as AbilityScore[]).map(stat => {
-                                const mod = char.abilityModifiers?.[stat] || 0;
-                                return (
+                            {(['STR', 'INT', 'WIS', 'DEX', 'CON', 'CHA'] as AbilityScore[]).map(stat => (
                                 <div key={stat} className="text-center">
                                     <div className="text-[9px] font-bold text-slate-500 mb-1">{stat}</div>
-                                    <div className={`text-xs font-mono py-1 border rounded relative
-                                        ${mod !== 0 ? 'bg-cyan-950 text-cyan-300 border-cyan-800' : 'text-slate-300 bg-slate-800/50 border-white/5'}
-                                    `}>
-                                        {char.abilities[stat] + mod}
+                                    <div className="text-xs font-mono py-1 border rounded relative text-slate-300 bg-slate-800/50 border-white/5">
+                                        {char.abilities[stat]}
                                     </div>
                                 </div>
-                            )})}
+                            ))}
                         </div>
                         
                         {/* Footer Action */}

@@ -69,14 +69,6 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
       abilities: { ...character.abilities, [stat]: val },
     });
   };
-
-  const handleStatModChange = (stat: AbilityScore, val: number) => {
-    onUpdate({
-      ...character,
-      abilityModifiers: { ...(character.abilityModifiers || {}), [stat]: val },
-    });
-  };
-
   const handleInventoryChange = (newContainers: Container[]) => {
     onUpdate({ ...character, containers: newContainers });
   };
@@ -261,18 +253,13 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
               </CollapsiblePanel>
 
               <CollapsiblePanel title="Abilities" defaultOpen>
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-[9px] text-cyan-500 font-bold">± Temp Mod</span>
-                </div>
                 <div className="grid grid-cols-2 gap-3">
                   {(Object.keys(character.abilities) as AbilityScore[]).map((key) => (
                     <StatInput
                       key={key}
                       label={ABILITY_LABELS[key]}
                       value={character.abilities[key]}
-                      modifier={character.abilityModifiers?.[key] || 0}
                       onChange={(val) => handleStatChange(key, val)}
-                      onModifierChange={(val) => handleStatModChange(key, val)}
                     />
                   ))}
                 </div>

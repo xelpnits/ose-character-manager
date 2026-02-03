@@ -4,25 +4,47 @@ import { AbilityScore, Character } from '../types';
  * Best-effort migration for legacy saved/imported character JSON.
  */
 export function migrateCharacter(raw: any): Character {
+  const defaultAbilityMods: Record<AbilityScore, number> = {
+    [AbilityScore.STR]: 0,
+    [AbilityScore.INT]: 0,
+    [AbilityScore.WIS]: 0,
+    [AbilityScore.DEX]: 0,
+    [AbilityScore.CON]: 0,
+    [AbilityScore.CHA]: 0,
+  };
+
+  // Legacy: some versions stored temporary ability modifiers separately.
+  // New UX: ability adjustments directly modify the base score.
+  const legacyMods: Record<AbilityScore, number> = raw?.abilityModifiers || defaultAbilityMods;
+
+  const migratedAbilities: Record<AbilityScore, number> = {
+    [AbilityScore.STR]: (raw?.abilities?.[AbilityScore.STR] ?? 10) + (legacyMods?.[AbilityScore.STR] ?? 0),
+    [AbilityScore.INT]: (raw?.abilities?.[AbilityScore.INT] ?? 10) + (legacyMods?.[AbilityScore.INT] ?? 0),
+    [AbilityScore.WIS]: (raw?.abilities?.[AbilityScore.WIS] ?? 10) + (legacyMods?.[AbilityScore.WIS] ?? 0),
+    [AbilityScore.DEX]: (raw?.abilities?.[AbilityScore.DEX] ?? 10) + (legacyMods?.[AbilityScore.DEX] ?? 0),
+    [AbilityScore.CON]: (raw?.abilities?.[AbilityScore.CON] ?? 10) + (legacyMods?.[AbilityScore.CON] ?? 0),
+    [AbilityScore.CHA]: (raw?.abilities?.[AbilityScore.CHA] ?? 10) + (legacyMods?.[AbilityScore.CHA] ?? 0),
+  };
+
   return {
     ...raw,
+    // 0) Base abilities
+    abilities: migratedAbilities,
+
     // 1) Container types
     containers: (raw?.containers ?? []).map((cont: any) => ({
       ...cont,
       type: cont.type || (cont.isFixed ? 'equipped' : 'carried'),
     })),
+
     // 2) Temp stats
     tempHp: raw?.tempHp || 0,
     acModifier: raw?.acModifier || 0,
+
     // 3) Modifier objects
-    abilityModifiers: raw?.abilityModifiers || {
-      [AbilityScore.STR]: 0,
-      [AbilityScore.INT]: 0,
-      [AbilityScore.WIS]: 0,
-      [AbilityScore.DEX]: 0,
-      [AbilityScore.CON]: 0,
-      [AbilityScore.CHA]: 0,
-    },
+    // Keep the field for backwards compatibility, but default to zeros.
+    abilityModifiers: defaultAbilityMods,
+
     saveModifiers: raw?.saveModifiers || {
       death: 0,
       wands: 0,
