@@ -538,9 +538,11 @@ const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, onSelec
                                 {isExpanded && (
                                     <div className="mt-2 grid grid-cols-1 gap-1 pl-4 animate-fade-in border-l border-slate-800">
                                         <div className="grid grid-cols-12 gap-4 px-4 py-2 bg-white/5 text-[10px] uppercase font-bold text-slate-500 tracking-wider rounded-md mb-1">
-                                            <div className="col-span-5">Item Name</div>
-                                            <div className="col-span-2 text-center">Qty</div>
-                                            <div className="col-span-5 text-right">Location</div>
+                                            <div className="col-span-5">Item</div>
+                                            <div className="col-span-1 text-center">Qty</div>
+                                            <div className="col-span-2 text-center">Wt (cn)</div>
+                                            <div className="col-span-2 text-center">Value (gp)</div>
+                                            <div className="col-span-2 text-right">Location</div>
                                         </div>
                                         {itemsInCat.map((item, idx) => (
                                             <div 
@@ -548,15 +550,60 @@ const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, onSelec
                                                 onContextMenu={(e) => handleItemContextMenu(e, item)}
                                                 className={`grid grid-cols-12 gap-4 px-4 py-3 rounded-md hover:bg-slate-800 transition-colors items-center group cursor-context-menu ${item.isBank ? 'bg-amber-900/10 border border-amber-900/20' : 'bg-slate-900/40 border border-white/5'}`}
                                             >
-                                                <div className="col-span-5 font-semibold text-slate-200 group-hover:text-emerald-300 transition-colors truncate flex items-center gap-2">
-                                                    {item.name}
-                                                    {item.isMagical && <Zap className="w-3 h-3 text-purple-400 fill-current" />}
-                                                    {item.isUnidentified && <HelpCircle className="w-3 h-3 text-cyan-400" />}
+                                                <div className="col-span-5 flex flex-col min-w-0">
+                                                    <div className="font-semibold text-slate-200 group-hover:text-emerald-300 transition-colors truncate flex items-center gap-2">
+                                                        <span className="truncate">{item.name}</span>
+                                                        {item.isMagical && <Zap className="w-3 h-3 text-purple-400 fill-current" title="Magical" />}
+                                                        {item.isUnidentified && <HelpCircle className="w-3 h-3 text-cyan-400" title="Unidentified" />}
+                                                    </div>
+                                                    <div className="flex flex-wrap gap-1.5 mt-1">
+                                                        <span className="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded flex items-center border border-slate-700">
+                                                            {getCategoryIcon(item.category, "w-2.5 h-2.5 mr-1")} {item.category || 'General'}
+                                                        </span>
+                                                        {item.isMagical && (
+                                                            <span className="text-[9px] bg-purple-900/40 text-purple-300 px-1 py-0.5 rounded border border-purple-500/40 flex items-center" title="Magical">
+                                                                <Zap className="w-2 h-2" />
+                                                            </span>
+                                                        )}
+                                                        {item.isUnidentified && (
+                                                            <span className="text-[9px] bg-cyan-900/40 text-cyan-300 px-1 py-0.5 rounded border border-cyan-500/40 flex items-center" title="Unidentified">
+                                                                <HelpCircle className="w-2 h-2" />
+                                                            </span>
+                                                        )}
+                                                        {item.isUnclaimed && (item.goldValue || 0) > 0 && (
+                                                            <span className="text-[9px] text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 flex items-center" title="New Loot (unclaimed)">
+                                                                <Sparkles className="w-2 h-2 mr-1" /> New
+                                                            </span>
+                                                        )}
+                                                        {item.damage && (
+                                                            <span className="text-[9px] bg-red-900/20 text-red-400 px-1 py-0.5 rounded border border-red-900/30 flex items-center" title="Damage">
+                                                                DMG {item.damage}
+                                                            </span>
+                                                        )}
+                                                        {item.armor && (
+                                                            <span className="text-[9px] bg-sky-900/20 text-sky-400 px-1 py-0.5 rounded border border-sky-900/30 flex items-center" title="Armor">
+                                                                <Shield className="w-2 h-2 mr-1" /> {item.armor}
+                                                            </span>
+                                                        )}
+                                                        {(item.charges || 0) > 0 && (
+                                                            <span className="text-[9px] bg-yellow-900/20 text-yellow-400 px-1 py-0.5 rounded border border-yellow-900/30 flex items-center" title="Charges">
+                                                                <Zap className="w-2 h-2 mr-1" /> {item.charges}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <div className="col-span-2 text-center font-mono text-slate-400 text-sm">
+                                                <div className="col-span-1 text-center font-mono text-slate-400 text-sm">
                                                     {item.count}
                                                 </div>
-                                                <div className="col-span-5 text-right flex items-start justify-end gap-2">
+                                                <div className="col-span-2 text-center font-mono text-slate-400 text-xs">
+                                                    <div>{item.weight}</div>
+                                                    {item.count > 1 && <div className="text-[10px] text-slate-600">({item.weight * item.count})</div>}
+                                                </div>
+                                                <div className="col-span-2 text-center font-mono text-slate-400 text-xs">
+                                                    <div>{item.goldValue || 0}</div>
+                                                    {item.count > 1 && (item.goldValue || 0) > 0 && <div className="text-[10px] text-slate-600">({(item.goldValue || 0) * item.count})</div>}
+                                                </div>
+                                                <div className="col-span-2 text-right flex items-start justify-end gap-2">
                                                     <div className="flex flex-col items-end">
                                                         <span className={`text-xs font-bold flex items-center gap-1 ${item.isBank ? 'text-amber-500' : 'text-white'}`}>
                                                             {item.isBank ? <Landmark className="w-3 h-3" /> : <Users className="w-3 h-3 text-emerald-500" />} 
