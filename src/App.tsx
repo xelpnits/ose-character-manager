@@ -13,6 +13,8 @@ const App: React.FC = () => {
     setCharacters,
     bank,
     setBank,
+    activityLog,
+    appendLog,
     saveStatus,
     charactersRef,
     bankRef,
@@ -54,15 +56,19 @@ const App: React.FC = () => {
     (action: () => void, message: string, tone: 'default' | 'danger' | 'success' = 'default') => {
       const snapshot = takeWorldSnapshot();
       action();
+      appendLog(message);
       setToast({
         isOpen: true,
         message,
         tone,
         actionLabel: 'Undo',
-        onAction: () => restoreWorldSnapshot(snapshot),
+        onAction: () => {
+          restoreWorldSnapshot(snapshot);
+          appendLog(`Undid: ${message}`);
+        },
       });
     },
-    [restoreWorldSnapshot, takeWorldSnapshot]
+    [appendLog, restoreWorldSnapshot, takeWorldSnapshot]
   );
 
   // --- Import / Export Handlers ---
@@ -97,9 +103,10 @@ const App: React.FC = () => {
     };
 
     setCharacters((prev) => [...prev, newChar]);
+    appendLog(`Created character “${newChar.name}”.`);
     setEditingCharId(newChar.id);
     setView('editor');
-  }, [setCharacters]);
+  }, [appendLog, setCharacters]);
 
   const handleSelectCharacter = useCallback((char: Character) => {
     setEditingCharId(char.id);
@@ -275,15 +282,21 @@ const App: React.FC = () => {
           ? 'The Bank'
           : charactersRef.current.find((c) => c.id === targetOwnerId)?.name || 'Character';
 
+      const toastMessage = `Moved ${actualQty}× ${itemToMove.name} to ${targetName}.`;
+      appendLog(toastMessage);
+
       setToast({
         isOpen: true,
-        message: `Moved ${actualQty}× ${itemToMove.name} to ${targetName}.`,
+        message: toastMessage,
         tone: 'default',
         actionLabel: 'Undo',
-        onAction: () => restoreWorldSnapshot(snapshot),
+        onAction: () => {
+          restoreWorldSnapshot(snapshot);
+          appendLog(`Undid: ${toastMessage}`);
+        },
       });
     },
-    [bankRef, charactersRef, restoreWorldSnapshot, setBank, setCharacters, takeWorldSnapshot]
+    [appendLog, bankRef, charactersRef, restoreWorldSnapshot, setBank, setCharacters, takeWorldSnapshot]
   );
 
   // Wrapper for InventoryManager
@@ -344,6 +357,7 @@ const App: React.FC = () => {
         <CharacterList
           characters={characters}
           bank={bank}
+          activityLog={activityLog}
           onSelect={handleSelectCharacter}
           onDelete={handleRequestDelete}
           onNew={handleNewCharacter}

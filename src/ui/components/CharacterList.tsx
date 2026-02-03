@@ -3,13 +3,16 @@ import { Character, Item, AbilityScore, ItemCategory, Container } from '../../ty
 import ConfirmDialog from './ConfirmDialog';
 import StackSplitDialog from './StackSplitDialog';
 import ImportExportControls from './ImportExportControls';
+import ActivityLogModal from './ActivityLogModal';
+import type { ActivityLogEntry } from '../../state/useWorldState';
 import { getCategoryIcon, getClassIcon } from '../../utils'; 
 import { BANK_ID } from '../../types';
-import { Plus, Trash2, ArrowRight, Shield, Heart, Crown, Coins, Sparkles, Users, PackageOpen, CheckCircle, Search, Box, Zap, HelpCircle, Landmark, Filter, Backpack, ChevronDown, ChevronRight, Activity, MoreHorizontal } from 'lucide-react';
+import { Plus, Trash2, ArrowRight, Shield, Heart, Crown, Coins, Sparkles, Users, PackageOpen, CheckCircle, Search, Box, Zap, HelpCircle, Landmark, Filter, Backpack, ChevronDown, ChevronRight, Activity, MoreHorizontal, ScrollText } from 'lucide-react';
 
 interface CharacterListProps {
   characters: Character[];
   bank: Item[];
+  activityLog: ActivityLogEntry[];
   onSelect: (char: Character) => void;
   onDelete: (id: string) => void;
   onNew: () => void;
@@ -193,10 +196,11 @@ const GlobalAddItemModal: React.FC<{
     );
 };
 
-const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, onSelect, onDelete, onNew, onClaimLoot, onMoveItem, onExport, onImport, onGlobalAddItem }) => {
+const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, activityLog, onSelect, onDelete, onNew, onClaimLoot, onMoveItem, onExport, onImport, onGlobalAddItem }) => {
   const [activeTab, setActiveTab] = useState<'roster' | 'loot' | 'inventory'>('roster');
   const [showClaimConfirm, setShowClaimConfirm] = useState(false);
   const [showGlobalAdd, setShowGlobalAdd] = useState(false);
+  const [isLogOpen, setIsLogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
   // New Global Inventory State
@@ -311,6 +315,17 @@ const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, onSelec
         </div>
         
         <div className="flex flex-col items-end gap-4 w-full xl:w-auto">
+             <div className="flex items-center gap-2">
+                <button
+                    type="button"
+                    onClick={() => setIsLogOpen(true)}
+                    className="p-2 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-xl border border-white/10 shadow-xl backdrop-blur-md transition-colors"
+                    title="Activity Log"
+                    aria-label="Activity Log"
+                >
+                    <ScrollText className="w-4 h-4" />
+                </button>
+             </div>
              {/* Tab Switcher */}
              <div className="flex flex-wrap justify-end bg-slate-900/80 p-1 rounded-xl border border-white/10 shadow-xl backdrop-blur-md w-full xl:w-auto">
                 <button 
@@ -697,6 +712,12 @@ const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, onSelec
               }}
           />
       )}
+
+      <ActivityLogModal
+        isOpen={isLogOpen}
+        onClose={() => setIsLogOpen(false)}
+        entries={activityLog}
+      />
     </div>
   );
 };

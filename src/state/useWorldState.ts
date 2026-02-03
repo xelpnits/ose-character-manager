@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Character, Item } from '../types';
-import { DEBOUNCE_DELAY_MS } from './storage';
+import { ACTIVITY_LOG_STORAGE_KEY, DEBOUNCE_DELAY_MS } from './storage';
 import {
   loadFromLocalStorage,
   makeExportBlob,
@@ -10,9 +10,40 @@ import {
 
 export type SaveStatus = 'saving' | 'saved' | 'error';
 
+export type ActivityLogEntry = {
+  id: string;
+  ts: number; // epoch ms
+  message: string;
+};
+
+const ACTIVITY_LOG_MAX = 200;
+
+function loadActivityLog(): ActivityLogEntry[] {
+  try {
+    const raw = localStorage.getItem(ACTIVITY_LOG_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .filter((e) => e && typeof e === 'object')
+      .map((e) => ({
+        id: String((e as any).id ?? crypto.randomUUID()),
+        ts: Number((e as any).ts ?? Date.now()),
+        message: String((e as any).message ?? ''),
+      }))
+      .filter((e) => e.message.trim().length > 0)
+      .slice(-ACTIVITY_LOG_MAX);
+  } catch (err) {
+    console.warn('Failed to load activity log', err);
+    return [];
+  }
+}
+
 export function useWorldState() {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [bank, setBank] = useState<Item[]>([]);
+  const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>(() => loadActivityLog());
   const [isLoaded, setIsLoaded] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   const [saveError, setSaveError] = useState<unknown>(null);
@@ -68,6 +99,28 @@ export function useWorldState() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isLoaded]);
 
+  const appendLog = useCallback((message: string) => {
+    const trimmed = message.trim();
+    if (!trimmed) return;
+
+    setActivityLog((prev) => {
+      const next = [...prev, { id: crypto.randomUUID(), ts: Date.now(), message: trimmed }];
+      return next.slice(-ACTIVITY_LOG_MAX);
+    });
+  }, []);
+
+  // Persist activity log separately (best-effort)
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        ACTIVITY_LOG_STORAGE_KEY,
+        JSON.stringify(activityLog.slice(-ACTIVITY_LOG_MAX))
+      );
+    } catch (err) {
+      console.warn('Failed to persist activity log', err);
+    }
+  }, [activityLog]);
+
   const exportData = useCallback(() => {
     const blob = makeExportBlob(charactersRef.current, bankRef.current);
     const url = URL.createObjectURL(blob);
@@ -77,31 +130,39 @@ export function useWorldState() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }, []);
 
-  const importData = useCallback((file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const { characters: nextChars, bank: nextBank } = parseImportJson(
-          e.target?.result as string
-        );
-        if (nextChars) setCharacters(nextChars);
-        if (nextBank) setBank(nextBank);
-        alert('Data successfully imported!');
-      } catch (err) {
-        console.error(err);
-        alert('Error importing file.');
-      }
-    };
-    reader.readAsText(file);
-  }, []);
+    appendLog('Exported backup.');
+  }, [appendLog]);
+
+  const importData = useCallback(
+    (file: File) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const { characters: nextChars, bank: nextBank } = parseImportJson(
+            e.target?.result as string
+          );
+          if (nextChars) setCharacters(nextChars);
+          if (nextBank) setBank(nextBank);
+          appendLog(`Imported backup “${file.name}”.`);
+          alert('Data successfully imported!');
+        } catch (err) {
+          console.error(err);
+          alert('Error importing file.');
+        }
+      };
+      reader.readAsText(file);
+    },
+    [appendLog]
+  );
 
   return {
     characters,
     setCharacters,
     bank,
     setBank,
+    activityLog,
+    appendLog,
     isLoaded,
     saveStatus,
     saveError,
