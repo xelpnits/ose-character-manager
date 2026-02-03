@@ -328,7 +328,7 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                           onChange={(e) =>
                             onUpdate({
                               ...character,
-                              savingThrows: { ...character.savingThrows, [saveName]: parseInt(e.target.value) },
+                              savingThrows: { ...character.savingThrows, [saveName]: parseInt(e.target.value) || 0 },
                             })
                           }
                           className="w-10 bg-slate-900 border border-slate-700 rounded text-center text-sm font-mono text-white focus:border-indigo-500"

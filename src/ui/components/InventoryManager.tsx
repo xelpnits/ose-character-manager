@@ -259,8 +259,12 @@ const ItemDetailModal: React.FC<{
                     <label className="block text-[10px] uppercase text-slate-500 font-bold mb-2 flex items-center"><Shield className="w-3 h-3 mr-1"/> AC Bonus</label>
                     <input 
                     type="number" 
-                    value={data.armor || ''} 
-                    onChange={e => setData({...data, armor: parseInt(e.target.value) || undefined})}
+                    value={data.armor ?? ''} 
+                    onChange={e => {
+                      const raw = e.target.value;
+                      const nextArmor = raw === '' ? undefined : parseInt(raw, 10);
+                      setData({ ...data, armor: Number.isFinite(nextArmor as number) ? (nextArmor as number) : undefined });
+                    }}
                     placeholder="-"
                     className="w-full bg-slate-950 border border-slate-700 p-3 rounded-lg text-white focus:border-indigo-500"
                     />
