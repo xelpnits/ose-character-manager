@@ -571,7 +571,7 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
   // Render Group Function
   const renderContainerGroup = (title: string, type: ContainerType, containersInGroup: Container[]) => {
       return (
-          <div className="mb-6 last:mb-0 animate-fade-in">
+          <div className="mb-4 last:mb-0 animate-fade-in">
               <div className="flex items-center justify-between mb-3 px-1">
                   <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
                       {type === 'equipped' && <Shirt className="w-3 h-3" />}
@@ -587,7 +587,7 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
                   </button>
               </div>
               
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4 items-start">
                 {containersInGroup.map((container) => {
                     const isDragOver = dragOverContainerId === container.id;
                     const containerWeight = calculateContainerWeight(container);
@@ -603,7 +603,7 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
                     <div 
                         key={container.id} 
                         className={`
-                            flex flex-col rounded-xl transition-all duration-300 border relative overflow-hidden
+                            flex flex-col rounded-xl transition-all duration-300 border relative overflow-hidden h-fit self-start
                             ${isDragOver 
                                 ? 'bg-indigo-900/20 border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.2)]' 
                                 : isOverweight
@@ -620,7 +620,7 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
                             </div>
                         )}
 
-                        <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between gap-3 bg-white/5 rounded-t-xl relative z-10">
+                        <div className="px-3 py-2 border-b border-white/5 flex items-center justify-between gap-3 bg-white/5 rounded-t-xl relative z-10">
                         <div className="flex items-center gap-3 flex-grow">
                             <div className={`p-2 rounded-lg shadow-inner ${isOverweight ? 'bg-red-950/50' : 'bg-slate-950'}`}>
                                 {getContainerIcon(container.name, container.isFixed)}
@@ -695,14 +695,14 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
                         )}
                         </div>
 
-                        <div className="p-4">
+                        <div className="p-3">
                             {container.items.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-6 text-slate-700 border-2 border-dashed border-slate-800 rounded-lg">
+                                <div className="flex flex-col items-center justify-center py-4 text-slate-700 border-2 border-dashed border-slate-800 rounded-lg">
                                     <PackageOpen className="w-6 h-6 mb-2 opacity-50" />
                                     <span className="text-xs">Empty</span>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2">
                                 {container.items.map((item) => (
                                 <div 
                                     key={item.id}
@@ -711,7 +711,7 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
                                     onContextMenu={(e) => handleContextMenu(e, item.id, container.id)}
                                     onClick={() => setEditingItem({ containerId: container.id, item })}
                                     className={`
-                                        group relative flex flex-col gap-1 p-3 rounded-lg border cursor-pointer
+                                        group relative flex flex-col gap-1 p-2 rounded-lg border cursor-pointer
                                         transition-all duration-200 shadow-sm
                                         ${item.isMagical 
                                             ? 'bg-purple-950/20 border-purple-500/30 hover:border-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.1)]' 
@@ -801,7 +801,7 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
   const storedContainers = containers.filter(c => c.type === 'stored');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
        {/* Global Inventory Header */}
        <div className="flex flex-col sm:flex-row justify-between items-end pb-4 border-b border-white/5">
           <div>
@@ -819,7 +819,7 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
           </div>
        </div>
 
-      <div className="space-y-8">
+      <div className="space-y-6">
           {renderContainerGroup("Equipped & Worn", 'equipped', equippedContainers)}
           {renderContainerGroup("Carried in Pack", 'carried', carriedContainers)}
           {storedContainers.length > 0 && renderContainerGroup("Bank & Storage", 'stored', storedContainers)}
