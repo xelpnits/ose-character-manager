@@ -317,7 +317,11 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                             {/* Main AC Display */}
                             <div className="flex items-baseline gap-2">
                                 <span className="text-6xl font-serif font-bold text-white">
-                                    {(character.ac || 9) - (character.acModifier || 0)}
+                                    {/*
+                                      Sanity: UI '+' buttons add to acModifier, so displayed AC must add the modifier.
+                                      Previously we subtracted, making '+' appear to *decrease* AC.
+                                    */}
+                                    {(character.ac || 9) + (character.acModifier || 0)}
                                 </span>
                                 {(character.acModifier || 0) !== 0 && (
                                     <span className="text-lg font-mono text-cyan-400 animate-pulse">

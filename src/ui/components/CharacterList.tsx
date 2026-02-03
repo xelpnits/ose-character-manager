@@ -418,7 +418,7 @@ const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, onSelec
                                 </div>
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-2xl font-mono font-bold text-white">
-                                        {(char.ac || 9) - (char.acModifier || 0)}
+                                        {(char.ac || 9) + (char.acModifier || 0)}
                                     </span>
                                 </div>
                                 {(char.acModifier || 0) !== 0 && (
