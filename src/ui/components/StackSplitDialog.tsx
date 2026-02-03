@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Item } from '../types';
+import { Item } from '../../types';
 import { Layers, ArrowRight } from 'lucide-react';
 
 interface StackSplitDialogProps {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { getModifier, formatModifier } from '../constants';
+import { getModifier, formatModifier } from '../../constants';
 
 interface StatInputProps {
   label: string;

@@ -1,0 +1,67 @@
+import { Character, Item } from '../types';
+import { migrateCharacters } from './migrations';
+import { BANK_STORAGE_KEY, EXPORT_VERSION, STORAGE_KEY } from './storage';
+
+export interface PersistedExport {
+  version: number;
+  date: string;
+  characters: Character[];
+  bank: Item[];
+}
+
+export function loadFromLocalStorage(): { characters: Character[]; bank: Item[] } {
+  const savedChars = localStorage.getItem(STORAGE_KEY);
+  const savedBank = localStorage.getItem(BANK_STORAGE_KEY);
+
+  let characters: Character[] = [];
+  let bank: Item[] = [];
+
+  if (savedChars) {
+    try {
+      const parsed = JSON.parse(savedChars);
+      characters = migrateCharacters(parsed);
+    } catch (e) {
+      console.error('Failed to parse saved characters', e);
+    }
+  }
+
+  if (savedBank) {
+    try {
+      bank = JSON.parse(savedBank);
+    } catch (e) {
+      console.error('Failed to parse saved bank', e);
+    }
+  }
+
+  return { characters, bank };
+}
+
+export function saveToLocalStorage(characters: Character[], bank: Item[]): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(characters));
+  localStorage.setItem(BANK_STORAGE_KEY, JSON.stringify(bank));
+}
+
+export function makeExportBlob(characters: Character[], bank: Item[]): Blob {
+  const data: PersistedExport = {
+    version: EXPORT_VERSION,
+    date: new Date().toISOString(),
+    characters,
+    bank,
+  };
+  return new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+}
+
+export function parseImportJson(jsonText: string): { characters?: Character[]; bank?: Item[] } {
+  const json = JSON.parse(jsonText);
+  const next: { characters?: Character[]; bank?: Item[] } = {};
+
+  if (json.characters && Array.isArray(json.characters)) {
+    next.characters = migrateCharacters(json.characters);
+  }
+
+  if (json.bank && Array.isArray(json.bank)) {
+    next.bank = json.bank as Item[];
+  }
+
+  return next;
+}

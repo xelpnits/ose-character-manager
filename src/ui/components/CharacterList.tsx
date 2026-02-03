@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Character, Item, AbilityScore, ItemCategory, Container } from '../types';
+import { Character, Item, AbilityScore, ItemCategory, Container } from '../../types';
 import ConfirmDialog from './ConfirmDialog';
 import StackSplitDialog from './StackSplitDialog';
 import ImportExportControls from './ImportExportControls';
-import { getCategoryIcon, getClassIcon } from '../utils'; 
-import { BANK_ID } from '../App';
+import { getCategoryIcon, getClassIcon } from '../../utils'; 
+import { BANK_ID } from '../../types';
 import { Plus, Trash2, ArrowRight, Shield, Heart, Crown, Coins, Sparkles, Users, PackageOpen, CheckCircle, Search, Box, Zap, HelpCircle, Landmark, Filter, Backpack, ChevronDown, ChevronRight, Activity } from 'lucide-react';
 
 interface CharacterListProps {

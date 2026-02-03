@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Character, OSEClass, Alignment, AbilityScore, Container, Item } from '../types';
-import { ABILITY_LABELS, CLASS_OPTIONS, LEVEL_1_SAVES } from '../constants';
+import { Character, OSEClass, Alignment, AbilityScore, Container, Item } from '../../types';
+import { ABILITY_LABELS, CLASS_OPTIONS, LEVEL_1_SAVES } from '../../constants';
 import StatInput from './StatInput';
 import InventoryManager from './InventoryManager';
 import XPCalculatorModal from './XPCalculatorModal';

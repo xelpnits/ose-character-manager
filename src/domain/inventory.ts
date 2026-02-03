@@ -1,5 +1,5 @@
 import { Character, Item, Container } from '../types';
-import { BANK_ID } from '../App';
+import { BANK_ID } from '../types';
 
 export interface WorldState {
   characters: Character[];

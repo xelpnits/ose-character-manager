@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Container, Item, Character, ItemCategory, ContainerType } from '../types';
+import { Container, Item, Character, ItemCategory, ContainerType } from '../../types';
 import ConfirmDialog from './ConfirmDialog';
 import StackSplitDialog from './StackSplitDialog';
-import { getCategoryIcon, calculateTotalItems, calculateTotalWeight, calculateContainerWeight } from '../utils';
+import { getCategoryIcon, calculateTotalItems, calculateTotalWeight, calculateContainerWeight } from '../../utils';
 import { 
   Plus, 
   Trash2, 
