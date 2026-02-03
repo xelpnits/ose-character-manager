@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Character, OSEClass, Alignment, AbilityScore, Container, Item } from '../../types';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Character, OSEClass, Alignment, AbilityScore, Container, Item, SavingThrows } from '../../types';
 import { ABILITY_LABELS, CLASS_OPTIONS, LEVEL_1_SAVES } from '../../constants';
 import StatInput from './StatInput';
 import CommitNumberInput from './CommitNumberInput';
@@ -46,19 +46,31 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
   const [showXPModal, setShowXPModal] = useState(false);
   const [activeTab, setActiveTab] = useState<EditorTab>('sheet');
 
+  // Refs to avoid stale closures in effects that shouldn't re-run on every character change
+  const characterRef = useRef(character);
+  const onUpdateRef = useRef(onUpdate);
+  useEffect(() => {
+    characterRef.current = character;
+    onUpdateRef.current = onUpdate;
+  });
+
   // Reset to the main sheet when switching characters.
   useEffect(() => {
     setActiveTab('sheet');
   }, [character.id]);
 
   // Auto-apply saves for level 1 if changing class
+  // Uses refs to avoid stale closures while only triggering on class/level changes
   useEffect(() => {
-    if (character.level === 1 && LEVEL_1_SAVES[character.class]) {
+    const char = characterRef.current;
+    const update = onUpdateRef.current;
+    if (char.level === 1 && LEVEL_1_SAVES[char.class]) {
+      const classSaves: SavingThrows = LEVEL_1_SAVES[char.class];
       // Only update if saves are different to avoid infinite loops
-      const currentSaves = JSON.stringify(character.savingThrows);
-      const newSaves = JSON.stringify(LEVEL_1_SAVES[character.class]);
+      const currentSaves = JSON.stringify(char.savingThrows);
+      const newSaves = JSON.stringify(classSaves);
       if (currentSaves !== newSaves) {
-        onUpdate({ ...character, savingThrows: LEVEL_1_SAVES[character.class] });
+        update({ ...char, savingThrows: classSaves });
       }
     }
   }, [character.class, character.level]);

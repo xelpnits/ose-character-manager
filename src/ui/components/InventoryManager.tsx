@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Container, Item, Character, ItemCategory, ContainerType, BANK_ID } from '../../types';
 import ConfirmDialog from './ConfirmDialog';
 import StackSplitDialog from './StackSplitDialog';
+import CommitNumberInput from './CommitNumberInput';
 import { getCategoryIcon, calculateTotalItems, calculateTotalWeight, calculateContainerWeight } from '../../utils';
 import { 
   Plus, 
