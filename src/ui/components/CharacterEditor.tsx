@@ -516,43 +516,12 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                 </div>
               </div>
 
-              {/* Note teaser / affordance */}
-              <div className="glass-panel rounded-2xl p-4 flex items-center justify-between">
-                <div className="text-sm text-slate-400">
-                  Notes live under the <span className="text-slate-200 font-semibold">Notes</span> tab to keep the sheet compact.
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('notes')}
-                  className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-bold uppercase tracking-widest text-slate-200"
-                >
-                  Open Notes
-                </button>
-              </div>
+              {/* Notes tab removed */}
             </div>
           </div>
         )}
 
-        {activeTab === 'notes' && (
-          <div className="glass-panel rounded-2xl p-1 min-h-[300px] flex flex-col">
-            <div className="px-4 py-3 border-b border-white/5 bg-white/5 rounded-t-xl flex items-center justify-between">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Chronicle & Notes</h2>
-              <button
-                type="button"
-                onClick={() => setActiveTab('sheet')}
-                className="text-[10px] uppercase font-bold tracking-widest text-slate-500 hover:text-slate-200"
-              >
-                Back to Sheet
-              </button>
-            </div>
-            <textarea
-              value={character.backstory}
-              onChange={(e) => onUpdate({ ...character, backstory: e.target.value })}
-              className="flex-grow w-full bg-transparent border-none p-4 text-slate-300 focus:ring-0 leading-relaxed font-serif text-lg resize-y min-h-[200px]"
-              placeholder="The story begins here..."
-            />
-          </div>
-        )}
+        {/* Notes tab removed */}
 
         {activeTab === 'inventory' && (
           <div className="space-y-6">
