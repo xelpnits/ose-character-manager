@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Container, Item, Character, ItemCategory, ContainerType } from '../../types';
+import { Container, Item, Character, ItemCategory, ContainerType, BANK_ID } from '../../types';
 import ConfirmDialog from './ConfirmDialog';
 import StackSplitDialog from './StackSplitDialog';
 import { getCategoryIcon, calculateTotalItems, calculateTotalWeight, calculateContainerWeight } from '../../utils';
@@ -89,17 +89,16 @@ const ContextMenu: React.FC<{
              </button>
         ))}
         
-        {otherCharacters.length > 0 && (
-            <>
-                <div className="border-t border-slate-800 my-1"></div>
-                <div className="px-4 py-1.5 text-[10px] text-slate-500 uppercase font-bold tracking-wider">Give to</div>
-                {otherCharacters.map(c => (
-                    <button key={c.id} onClick={() => onGiveToCharacter(c.id)} className="w-full text-left px-4 py-2 hover:bg-slate-800 flex items-center text-slate-400 truncate hover:text-white transition-colors">
-                        <User className="w-3 h-3 mr-3 text-slate-600"/> {c.name}
-                    </button>
-                ))}
-            </>
-        )}
+        <div className="border-t border-slate-800 my-1"></div>
+        <div className="px-4 py-1.5 text-[10px] text-slate-500 uppercase font-bold tracking-wider">Give to</div>
+        <button onClick={() => onGiveToCharacter(BANK_ID)} className="w-full text-left px-4 py-2 hover:bg-amber-900/20 flex items-center text-amber-200 truncate hover:text-amber-100 transition-colors">
+            <Archive className="w-3 h-3 mr-3 text-amber-500"/> The Bank
+        </button>
+        {otherCharacters.map(c => (
+            <button key={c.id} onClick={() => onGiveToCharacter(c.id)} className="w-full text-left px-4 py-2 hover:bg-slate-800 flex items-center text-slate-400 truncate hover:text-white transition-colors">
+                <User className="w-3 h-3 mr-3 text-slate-600"/> {c.name}
+            </button>
+        ))}
 
         <div className="border-t border-slate-800 my-1"></div>
         <button onClick={onDelete} className="text-left px-4 py-2.5 hover:bg-red-900/20 hover:text-red-400 flex items-center text-red-500 w-full transition-colors rounded-b-xl">
@@ -499,7 +498,7 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
              isOpen: true,
              item: item,
              targetId: targetCharId,
-             targetName: otherCharacters.find(c => c.id === targetCharId)?.name || 'Unknown'
+             targetName: targetCharId === BANK_ID ? 'The Bank' : otherCharacters.find(c => c.id === targetCharId)?.name || 'Unknown'
          });
          setContextMenu(null);
          return;
