@@ -21,6 +21,12 @@ const StackSplitDialog: React.FC<StackSplitDialogProps> = ({
   const lastActiveRef = useRef<HTMLElement | null>(null);
   const initialFocusRef = useRef<HTMLInputElement>(null);
 
+  // Reset count when reopening or when switching to a different item
+  useEffect(() => {
+    if (!isOpen || !item) return;
+    setCount(1);
+  }, [isOpen, item?.id]);
+
   useEffect(() => {
     if (!isOpen) return;
 

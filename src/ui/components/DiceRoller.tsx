@@ -13,6 +13,8 @@ interface RollMessage {
   text?: string;
 }
 
+const MAX_DICE_MESSAGES = 200;
+
 const DiceRoller: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [username, setUsername] = useState<string>('');
@@ -81,7 +83,7 @@ const DiceRoller: React.FC = () => {
           timestamp: new Date(),
           type: 'system',
           text: `${tempName} has joined the table.`
-      }]);
+      }].slice(-MAX_DICE_MESSAGES));
   };
 
   const handleResetName = () => {
@@ -133,7 +135,7 @@ const DiceRoller: React.FC = () => {
             modifier: m
         };
 
-        setMessages(prev => [...prev, message]);
+        setMessages(prev => [...prev, message].slice(-MAX_DICE_MESSAGES));
         setCurrentResult(message);
         setOverlayState('result');
 

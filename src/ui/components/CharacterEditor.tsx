@@ -46,9 +46,19 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
   const [showXPModal, setShowXPModal] = useState(false);
   const [activeTab, setActiveTab] = useState<EditorTab>('sheet');
 
+  const updateUndoable = useCallback(
+    (next: Character, message: string) => {
+      if (onUpdateUndoable) onUpdateUndoable(next, message);
+      else onUpdate(next);
+    },
+    [onUpdate, onUpdateUndoable]
+  );
+
   // Refs to avoid stale closures in effects that shouldn't re-run on every character change
   const characterRef = useRef(character);
   const onUpdateRef = useRef(onUpdate);
+  const prevClassRef = useRef(character.class);
+
   useEffect(() => {
     characterRef.current = character;
     onUpdateRef.current = onUpdate;
@@ -57,22 +67,38 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
   // Reset to the main sheet when switching characters.
   useEffect(() => {
     setActiveTab('sheet');
-  }, [character.id]);
+    // Reset previous-class tracking per character
+    prevClassRef.current = character.class;
+  }, [character.id, character.class]);
 
-  // Auto-apply saves for level 1 if changing class
-  // Uses refs to avoid stale closures while only triggering on class/level changes
+  // Auto-apply level-1 class saves ONLY when it looks like saves were not custom.
+  // Rule:
+  // - At level 1: if the current saves match the previous class' level-1 defaults,
+  //   then a class change will update saves to the new class' level-1 defaults.
+  // - At level > 1: never auto-update saves (user controls them).
   useEffect(() => {
     const char = characterRef.current;
     const update = onUpdateRef.current;
-    if (char.level === 1 && LEVEL_1_SAVES[char.class]) {
-      const classSaves: SavingThrows = LEVEL_1_SAVES[char.class];
-      // Only update if saves are different to avoid infinite loops
-      const currentSaves = JSON.stringify(char.savingThrows);
-      const newSaves = JSON.stringify(classSaves);
-      if (currentSaves !== newSaves) {
-        update({ ...char, savingThrows: classSaves });
+    const prevClass = prevClassRef.current;
+
+    const classChanged = prevClass !== char.class;
+
+    if (classChanged && char.level === 1) {
+      const prevDefaults = LEVEL_1_SAVES[prevClass as keyof typeof LEVEL_1_SAVES] as SavingThrows | undefined;
+      const nextDefaults = LEVEL_1_SAVES[char.class] as SavingThrows | undefined;
+
+      if (prevDefaults && nextDefaults) {
+        const currentSaves = JSON.stringify(char.savingThrows);
+        const prevSaves = JSON.stringify(prevDefaults);
+
+        // Only overwrite if saves were still at previous defaults
+        if (currentSaves === prevSaves) {
+          update({ ...char, savingThrows: nextDefaults });
+        }
       }
     }
+
+    prevClassRef.current = char.class;
   }, [character.class, character.level]);
 
   const handleStatChange = (stat: AbilityScore, val: number) => {
@@ -198,6 +224,7 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
               type="text"
               value={character.name}
               onChange={(e) => onUpdate({ ...character, name: e.target.value })}
+              maxLength={50}
               className="bg-transparent border-none text-lg font-serif font-bold text-white placeholder-slate-600 focus:ring-0 px-0 w-48 sm:w-auto truncate"
               placeholder="Character Name"
             />
@@ -215,10 +242,15 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
 
             <div className="hidden md:flex items-center gap-2 bg-slate-900/50 rounded-lg px-3 py-1.5 border border-white/5">
               <span className="text-xs text-slate-400 uppercase font-bold">Lvl</span>
-              <input
-                type="number"
+              <CommitNumberInput
                 value={character.level}
-                onChange={(e) => onUpdate({ ...character, level: parseInt(e.target.value) || 1 })}
+                emptyCommit="keep"
+                transform={(n) => Math.max(1, n)}
+                onCommit={(n) => {
+                  if (typeof n !== 'number') return;
+                  if (n === character.level) return;
+                  updateUndoable({ ...character, level: n }, `Set level to ${n}.`);
+                }}
                 className="w-10 bg-transparent text-center font-mono font-bold text-white border-none p-0 focus:ring-0"
               />
             </div>
@@ -251,7 +283,11 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                     <label className="text-[10px] uppercase text-slate-500 font-bold">Class</label>
                     <select
                       value={character.class}
-                      onChange={(e) => onUpdate({ ...character, class: e.target.value as OSEClass })}
+                      onChange={(e) => {
+                        const nextClass = e.target.value as OSEClass;
+                        if (nextClass === character.class) return;
+                        updateUndoable({ ...character, class: nextClass }, `Changed class to ${nextClass}.`);
+                      }}
                       className="w-full bg-slate-900 border border-slate-700 text-white text-sm rounded-lg p-2.5 focus:border-indigo-500"
                     >
                       {CLASS_OPTIONS.map((c) => (
@@ -292,7 +328,30 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
               </CollapsiblePanel>
 
               <CollapsiblePanel id="saving-throws" title="Saving Throws" icon={<Skull className="w-3 h-3" />} defaultOpen={false}>
-                <div className="space-y-2">
+                <div className="space-y-3">
+                  {LEVEL_1_SAVES[character.class] && (
+                    <div className="flex items-center justify-between gap-3 p-2 rounded-lg border border-white/5 bg-white/5">
+                      <div className="text-[10px] uppercase font-bold tracking-widest text-slate-500">
+                        Class Defaults
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const defaults = LEVEL_1_SAVES[character.class] as SavingThrows;
+                          updateUndoable(
+                            { ...character, savingThrows: defaults },
+                            `Applied ${character.class} level 1 saving throw defaults.`
+                          );
+                        }}
+                        className="text-[10px] uppercase font-bold tracking-widest text-indigo-300 hover:text-white px-2 py-1 rounded border border-indigo-500/30 bg-indigo-600/10 hover:bg-indigo-600/20 transition-colors"
+                        title="Apply level 1 class defaults to current saving throws"
+                      >
+                        Apply L1 Saves
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
                   {Object.entries(character.savingThrows).map(([saveName, val]) => (
                     <div
                       key={saveName}
@@ -376,7 +435,8 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                       transform={(n) => Math.max(1, n)}
                       onCommit={(n) => {
                         if (typeof n !== 'number') return;
-                        onUpdate({ ...character, maxHp: n });
+                        if (n === character.maxHp) return;
+                        updateUndoable({ ...character, maxHp: n }, `Set max HP to ${n}.`);
                       }}
                       className="w-16 bg-transparent text-3xl font-serif text-slate-500 border-none p-0 mb-1 focus:ring-0 focus:text-white transition-colors"
                     />
@@ -403,7 +463,8 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                         transform={(n) => Math.max(0, n)}
                         onCommit={(n) => {
                           if (typeof n !== 'number') return;
-                          onUpdate({ ...character, tempHp: n });
+                          if (n === (character.tempHp ?? 0)) return;
+                          updateUndoable({ ...character, tempHp: n }, `Set temp HP to ${n}.`);
                         }}
                         className="w-12 text-center bg-cyan-950/30 border border-cyan-500/30 rounded text-cyan-300 font-bold focus:border-cyan-400"
                       />
@@ -417,18 +478,30 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                   </div>
 
                   <div className="w-full bg-slate-800 h-1.5 mt-2 rounded-full overflow-hidden relative">
-                    {/* Base HP Bar */}
-                    <div
-                      className="h-full bg-red-500 transition-all duration-500 absolute left-0 top-0"
-                      style={{ width: `${Math.min(100, (character.hp / character.maxHp) * 100)}%` }}
-                    ></div>
-                    {/* Temp HP Overlay (visual hack: assumes temp hp goes 'over' max visually but separate) */}
-                    {character.tempHp > 0 && (
-                      <div
-                        className="h-full bg-cyan-400 transition-all duration-500 absolute top-0 opacity-70"
-                        style={{ left: `${Math.min(100, (character.hp / character.maxHp) * 100)}%`, width: '10%' }}
-                      ></div>
-                    )}
+                    {(() => {
+                      const maxHp = Math.max(1, character.maxHp || 1);
+                      const basePct = Math.min(100, (character.hp / maxHp) * 100);
+                      const tempPct =
+                        character.tempHp > 0 ? Math.min(100 - basePct, (character.tempHp / maxHp) * 100) : 0;
+
+                      return (
+                        <>
+                          {/* Base HP Bar */}
+                          <div
+                            className="h-full bg-red-500 transition-all duration-500 absolute left-0 top-0"
+                            style={{ width: `${basePct}%` }}
+                          ></div>
+
+                          {/* Temp HP Overlay */}
+                          {tempPct > 0 && (
+                            <div
+                              className="h-full bg-cyan-400 transition-all duration-500 absolute top-0 opacity-70"
+                              style={{ left: `${basePct}%`, width: `${tempPct}%` }}
+                            ></div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -458,7 +531,8 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                         emptyCommit="keep"
                         onCommit={(n) => {
                           if (typeof n !== 'number') return;
-                          onUpdate({ ...character, ac: n });
+                          if (n === character.ac) return;
+                          updateUndoable({ ...character, ac: n }, `Set base AC to ${n}.`);
                         }}
                         className="w-10 bg-transparent text-center border-b border-slate-600 focus:border-indigo-500 text-sm font-mono p-0"
                       />
@@ -475,7 +549,11 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                       <CommitNumberInput
                         value={character.acModifier ?? 0}
                         emptyCommit="zero"
-                        onCommit={(n) => onUpdate({ ...character, acModifier: n ?? 0 })}
+                        onCommit={(n) => {
+                          const next = n ?? 0;
+                          if (next === (character.acModifier ?? 0)) return;
+                          updateUndoable({ ...character, acModifier: next }, `Set AC modifier to ${next}.`);
+                        }}
                         placeholder="0"
                         className={`w-12 text-center text-sm font-bold bg-slate-950 border rounded focus:border-cyan-500 ${
                           character.acModifier ? 'border-cyan-500/50 text-cyan-400' : 'border-slate-800 text-slate-500'
@@ -484,7 +562,11 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                     </div>
                     {/* Quick Buttons */}
                     <div className="flex justify-between gap-1">
-                      <QuickModButton val={0} label="Clr" onClick={() => onUpdate({ ...character, acModifier: 0 })} />
+                      <QuickModButton
+                        val={0}
+                        label="Clr"
+                        onClick={() => updateUndoable({ ...character, acModifier: 0 }, 'Cleared AC modifier.')}
+                      />
                       <div className="flex gap-1">
                         <QuickModButton
                           val={1}

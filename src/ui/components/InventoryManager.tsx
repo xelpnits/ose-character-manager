@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useLayoutEffect, useState, useRef, useEffect } from 'react';
 import { Container, Item, Character, ItemCategory, ContainerType, BANK_ID } from '../../types';
 import ConfirmDialog from './ConfirmDialog';
 import StackSplitDialog from './StackSplitDialog';
@@ -50,8 +50,22 @@ const ContextMenu: React.FC<{
   onDelete: () => void;
   onMoveToContainer: (targetContainerId: string) => void;
   onGiveToCharacter: (targetCharId: string) => void;
-}> = ({ x, y, item, containerId, containers, otherCharacters, onClose, onEdit, onDelete, onMoveToContainer, onGiveToCharacter }) => {
+}> = ({
+  x,
+  y,
+  item,
+  containerId,
+  containers,
+  otherCharacters,
+  onClose,
+  onEdit,
+  onDelete,
+  onMoveToContainer,
+  onGiveToCharacter,
+}) => {
   const menuRef = useRef<HTMLDivElement>(null);
+  const firstItemRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{ x: number; y: number }>({ x, y });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -59,52 +73,130 @@ const ContextMenu: React.FC<{
         onClose();
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
-  // Adjust for viewport edges (simple version)
-  const adjustedX = Math.min(x, window.innerWidth - 240);
-  const adjustedY = Math.min(y, window.innerHeight - 300);
+  // Adjust for viewport edges based on actual menu size
+  useLayoutEffect(() => {
+    const el = menuRef.current;
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    const margin = 8;
+
+    let nextX = x;
+    let nextY = y;
+
+    nextX = Math.min(nextX, window.innerWidth - rect.width - margin);
+    nextY = Math.min(nextY, window.innerHeight - rect.height - margin);
+    nextX = Math.max(margin, nextX);
+    nextY = Math.max(margin, nextY);
+
+    setPos({ x: nextX, y: nextY });
+  }, [x, y]);
+
+  // Keyboard navigation (Arrow keys + Escape)
+  useEffect(() => {
+    const t = window.setTimeout(() => firstItemRef.current?.focus(), 0);
+    return () => window.clearTimeout(t);
+  }, []);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      onClose();
+      return;
+    }
+
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+
+    const items = Array.from(
+      menuRef.current?.querySelectorAll<HTMLButtonElement>('button[data-menuitem="true"]') ?? []
+    );
+    if (items.length === 0) return;
+
+    const active = document.activeElement as HTMLElement | null;
+    const idx = items.findIndex((b) => b === active);
+    const current = idx >= 0 ? idx : 0;
+
+    e.preventDefault();
+
+    const next = e.key === 'ArrowDown' ? (current + 1) % items.length : (current - 1 + items.length) % items.length;
+    items[next]?.focus();
+  };
 
   return (
-    <div 
-        ref={menuRef}
-        style={{ top: adjustedY, left: adjustedX }}
-        className="fixed z-[100] w-60 bg-slate-900 border border-slate-700 shadow-2xl rounded-xl py-1 text-sm animate-fade-in flex flex-col ring-1 ring-white/10"
+    <div
+      ref={menuRef}
+      style={{ top: pos.y, left: pos.x }}
+      className="fixed z-[100] w-60 bg-slate-900 border border-slate-700 shadow-2xl rounded-xl py-1 text-sm animate-fade-in flex flex-col ring-1 ring-white/10"
+      role="menu"
+      aria-label={`Actions for ${item.name}`}
+      onKeyDown={handleKeyDown}
     >
-        <div className="px-3 py-3 border-b border-slate-700 bg-slate-800/50 rounded-t-xl">
-            <span className="font-bold text-white block truncate">{item.name}</span>
-            <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Actions</span>
-        </div>
-        
-        <button onClick={onEdit} className="text-left px-4 py-2.5 hover:bg-indigo-600/20 hover:text-indigo-300 flex items-center text-slate-300 transition-colors w-full">
-            <Edit2 className="w-4 h-4 mr-3 text-slate-500"/> Edit
-        </button>
-        
-        <div className="border-t border-slate-800 my-1"></div>
-        <div className="px-4 py-1.5 text-[10px] text-slate-500 uppercase font-bold tracking-wider">Move to</div>
-        {containers.filter(c => c.id !== containerId).map(c => (
-             <button key={c.id} onClick={() => onMoveToContainer(c.id)} className="w-full text-left px-4 py-2 hover:bg-slate-800 flex items-center text-slate-400 truncate hover:text-white transition-colors">
-                <MoveRight className="w-3 h-3 mr-3 text-slate-600"/> {c.name}
-             </button>
-        ))}
-        
-        <div className="border-t border-slate-800 my-1"></div>
-        <div className="px-4 py-1.5 text-[10px] text-slate-500 uppercase font-bold tracking-wider">Give to</div>
-        <button onClick={() => onGiveToCharacter(BANK_ID)} className="w-full text-left px-4 py-2 hover:bg-amber-900/20 flex items-center text-amber-200 truncate hover:text-amber-100 transition-colors">
-            <Archive className="w-3 h-3 mr-3 text-amber-500"/> The Bank
-        </button>
-        {otherCharacters.map(c => (
-            <button key={c.id} onClick={() => onGiveToCharacter(c.id)} className="w-full text-left px-4 py-2 hover:bg-slate-800 flex items-center text-slate-400 truncate hover:text-white transition-colors">
-                <User className="w-3 h-3 mr-3 text-slate-600"/> {c.name}
-            </button>
+      <div className="px-3 py-3 border-b border-slate-700 bg-slate-800/50 rounded-t-xl">
+        <span className="font-bold text-white block truncate">{item.name}</span>
+        <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Actions</span>
+      </div>
+
+      <button
+        ref={firstItemRef}
+        data-menuitem="true"
+        role="menuitem"
+        onClick={onEdit}
+        className="text-left px-4 py-2.5 hover:bg-indigo-600/20 hover:text-indigo-300 flex items-center text-slate-300 transition-colors w-full"
+      >
+        <Edit2 className="w-4 h-4 mr-3 text-slate-500" /> Edit
+      </button>
+
+      <div className="border-t border-slate-800 my-1"></div>
+      <div className="px-4 py-1.5 text-[10px] text-slate-500 uppercase font-bold tracking-wider">Move to</div>
+      {containers
+        .filter((c) => c.id !== containerId)
+        .map((c) => (
+          <button
+            key={c.id}
+            data-menuitem="true"
+            role="menuitem"
+            onClick={() => onMoveToContainer(c.id)}
+            className="w-full text-left px-4 py-2 hover:bg-slate-800 flex items-center text-slate-400 truncate hover:text-white transition-colors"
+          >
+            <MoveRight className="w-3 h-3 mr-3 text-slate-600" /> {c.name}
+          </button>
         ))}
 
-        <div className="border-t border-slate-800 my-1"></div>
-        <button onClick={onDelete} className="text-left px-4 py-2.5 hover:bg-red-900/20 hover:text-red-400 flex items-center text-red-500 w-full transition-colors rounded-b-xl">
-            <Trash2 className="w-4 h-4 mr-3"/> Delete
+      <div className="border-t border-slate-800 my-1"></div>
+      <div className="px-4 py-1.5 text-[10px] text-slate-500 uppercase font-bold tracking-wider">Give to</div>
+      <button
+        data-menuitem="true"
+        role="menuitem"
+        onClick={() => onGiveToCharacter(BANK_ID)}
+        className="w-full text-left px-4 py-2 hover:bg-amber-900/20 flex items-center text-amber-200 truncate hover:text-amber-100 transition-colors"
+      >
+        <Archive className="w-3 h-3 mr-3 text-amber-500" /> The Bank
+      </button>
+      {otherCharacters.map((c) => (
+        <button
+          key={c.id}
+          data-menuitem="true"
+          role="menuitem"
+          onClick={() => onGiveToCharacter(c.id)}
+          className="w-full text-left px-4 py-2 hover:bg-slate-800 flex items-center text-slate-400 truncate hover:text-white transition-colors"
+        >
+          <User className="w-3 h-3 mr-3 text-slate-600" /> {c.name}
         </button>
+      ))}
+
+      <div className="border-t border-slate-800 my-1"></div>
+      <button
+        data-menuitem="true"
+        role="menuitem"
+        onClick={onDelete}
+        className="text-left px-4 py-2.5 hover:bg-red-900/20 hover:text-red-400 flex items-center text-red-500 w-full transition-colors rounded-b-xl"
+      >
+        <Trash2 className="w-4 h-4 mr-3" /> Delete
+      </button>
     </div>
   );
 };
@@ -635,6 +727,10 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
                                         type="text"
                                         value={container.name}
                                         onChange={(e) => handleRenameContainer(container.id, e.target.value)}
+                                        onBlur={(e) => {
+                                          const trimmed = e.target.value.trim();
+                                          if (!trimmed) handleRenameContainer(container.id, 'Unnamed Container');
+                                        }}
                                         className="bg-transparent text-white font-bold text-sm focus:outline-none focus:border-b focus:border-indigo-500 w-full placeholder-slate-600"
                                         placeholder="Name..."
                                     />

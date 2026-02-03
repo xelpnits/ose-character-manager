@@ -7,6 +7,14 @@ import DiceRoller from './ui/components/DiceRoller';
 import Toast from './ui/components/Toast';
 import { useWorldState } from './state/useWorldState';
 
+interface ToastItem {
+  id: string;
+  message: string;
+  actionLabel?: string;
+  onAction?: () => void;
+  tone?: 'default' | 'danger' | 'success';
+}
+
 const App: React.FC = () => {
   const {
     characters,
@@ -28,14 +36,17 @@ const App: React.FC = () => {
   // Dialog State
   const [charToDelete, setCharToDelete] = useState<string | null>(null);
 
-  // Toast / Undo
-  const [toast, setToast] = useState<{
-    isOpen: boolean;
-    message: string;
-    actionLabel?: string;
-    onAction?: () => void;
-    tone?: 'default' | 'danger' | 'success';
-  }>({ isOpen: false, message: '' });
+  // Toast Queue / Undo - allows multiple undo actions without overwriting
+  const [toastQueue, setToastQueue] = useState<ToastItem[]>([]);
+  const currentToast = toastQueue[0] ?? null;
+
+  const enqueueToast = useCallback((item: Omit<ToastItem, 'id'>) => {
+    setToastQueue((prev) => [...prev, { ...item, id: crypto.randomUUID() }]);
+  }, []);
+
+  const dismissToast = useCallback(() => {
+    setToastQueue((prev) => prev.slice(1));
+  }, []);
 
   const takeWorldSnapshot = useCallback(() => {
     return structuredClone({
@@ -57,8 +68,7 @@ const App: React.FC = () => {
       const snapshot = takeWorldSnapshot();
       action();
       appendLog(message);
-      setToast({
-        isOpen: true,
+      enqueueToast({
         message,
         tone,
         actionLabel: 'Undo',
@@ -68,7 +78,7 @@ const App: React.FC = () => {
         },
       });
     },
-    [appendLog, restoreWorldSnapshot, takeWorldSnapshot]
+    [appendLog, enqueueToast, restoreWorldSnapshot, takeWorldSnapshot]
   );
 
   // --- Import / Export Handlers ---

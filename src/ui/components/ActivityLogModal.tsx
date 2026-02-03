@@ -23,6 +23,7 @@ const ActivityLogModal: React.FC<{
 }> = ({ isOpen, onClose, entries }) => {
   const lastActiveRef = useRef<HTMLElement | null>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const sorted = useMemo(() => {
     // Ensure chronological order (oldest -> newest)
@@ -38,7 +39,13 @@ const ActivityLogModal: React.FC<{
     };
 
     document.addEventListener('keydown', onKeyDown);
-    setTimeout(() => closeBtnRef.current?.focus(), 0);
+    setTimeout(() => {
+      closeBtnRef.current?.focus();
+      // Default scroll to newest
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    }, 0);
 
     return () => {
       document.removeEventListener('keydown', onKeyDown);
@@ -82,7 +89,7 @@ const ActivityLogModal: React.FC<{
               <div className="text-slate-500 text-sm">Your recent actions will appear here.</div>
             </div>
           ) : (
-            <div className="max-h-[70vh] overflow-y-auto custom-scrollbar rounded-xl">
+            <div ref={scrollRef} className="max-h-[70vh] overflow-y-auto custom-scrollbar rounded-xl">
               <ol className="space-y-2">
                 {sorted.map((e) => (
                   <li key={e.id} className="glass-panel rounded-xl px-4 py-3 border border-white/5">
