@@ -127,28 +127,43 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
     </button>
   );
 
+  const [openPanels, setOpenPanels] = useState<Record<string, boolean>>({});
+
   const CollapsiblePanel = ({
+    id,
     title,
     icon,
     defaultOpen = true,
     children,
   }: {
+    id: string;
     title: string;
     icon?: React.ReactNode;
     defaultOpen?: boolean;
     children: React.ReactNode;
-  }) => (
-    <details defaultOpen={defaultOpen} className="glass-panel rounded-2xl group">
-      <summary className="list-none cursor-pointer select-none px-5 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {icon}
-          <h2 className="text-xs font-bold uppercase tracking-widest text-indigo-400">{title}</h2>
-        </div>
-        <ChevronDown className="w-4 h-4 text-slate-500 transition-transform group-open:rotate-180" />
-      </summary>
-      <div className="px-5 pb-5 pt-1">{children}</div>
-    </details>
-  );
+  }) => {
+    const isOpen = openPanels[id] ?? defaultOpen;
+
+    return (
+      <details
+        open={isOpen}
+        onToggle={(e) => {
+          const nextOpen = (e.currentTarget as HTMLDetailsElement).open;
+          setOpenPanels((prev) => ({ ...prev, [id]: nextOpen }));
+        }}
+        className="glass-panel rounded-2xl group"
+      >
+        <summary className="list-none cursor-pointer select-none px-5 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {icon}
+            <h2 className="text-xs font-bold uppercase tracking-widest text-indigo-400">{title}</h2>
+          </div>
+          <ChevronDown className="w-4 h-4 text-slate-500 transition-transform group-open:rotate-180" />
+        </summary>
+        <div className="px-5 pb-5 pt-1">{children}</div>
+      </details>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-arcane-950 pb-24 text-slate-200">
@@ -218,7 +233,7 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 lg:gap-8 items-start">
             {/* LEFT: Identity & Rules */}
             <div className="xl:col-span-4 space-y-6">
-              <CollapsiblePanel title="Identity" icon={<Zap className="w-3 h-3" />} defaultOpen>
+              <CollapsiblePanel id="identity" title="Identity" icon={<Zap className="w-3 h-3" />} defaultOpen>
                 <div className="space-y-3">
                   <div>
                     <label className="text-[10px] uppercase text-slate-500 font-bold">Class</label>
@@ -251,7 +266,7 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                 </div>
               </CollapsiblePanel>
 
-              <CollapsiblePanel title="Abilities" defaultOpen>
+              <CollapsiblePanel id="abilities" title="Abilities" defaultOpen>
                 <div className="grid grid-cols-2 gap-3">
                   {(Object.keys(character.abilities) as AbilityScore[]).map((key) => (
                     <StatInput
@@ -264,7 +279,7 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                 </div>
               </CollapsiblePanel>
 
-              <CollapsiblePanel title="Saving Throws" icon={<Skull className="w-3 h-3" />} defaultOpen={false}>
+              <CollapsiblePanel id="saving-throws" title="Saving Throws" icon={<Skull className="w-3 h-3" />} defaultOpen={false}>
                 <div className="space-y-2">
                   {Object.entries(character.savingThrows).map(([saveName, val]) => (
                     <div
