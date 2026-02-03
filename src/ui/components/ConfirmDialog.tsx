@@ -32,6 +32,10 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       if (!isOpen) return;
       if (e.key === 'Escape') {
         onCancel();
+      } else if (e.key === 'Enter' && !isDangerous) {
+        // Only allow Enter to confirm for non-dangerous actions
+        e.preventDefault();
+        onConfirm();
       }
     };
 
@@ -48,7 +52,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       // Restore focus when closing
       lastActiveRef.current?.focus?.();
     };
-  }, [isDangerous, isOpen, onCancel]);
+  }, [isDangerous, isOpen, onCancel, onConfirm]);
 
   if (!isOpen) return null;
 

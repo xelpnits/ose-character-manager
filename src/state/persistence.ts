@@ -1,6 +1,24 @@
 import { Character, Item } from '../types';
+import { ItemSchema } from '../domain/validation';
 import { migrateCharacters } from './migrations';
 import { BANK_STORAGE_KEY, EXPORT_VERSION, STORAGE_KEY } from './storage';
+
+/**
+ * Validates and parses bank items using Zod schema.
+ * Invalid items are logged and skipped to prevent data corruption.
+ */
+function validateBankItems(rawBank: unknown[]): Item[] {
+  return rawBank
+    .map((item, index) => {
+      const result = ItemSchema.safeParse(item);
+      if (result.success) {
+        return result.data as Item;
+      }
+      console.warn(`Skipping invalid bank item at index ${index}:`, result.error.issues);
+      return null;
+    })
+    .filter((item): item is Item => item !== null);
+}
 
 export interface PersistedExport {
   version: number;
@@ -27,7 +45,10 @@ export function loadFromLocalStorage(): { characters: Character[]; bank: Item[] 
 
   if (savedBank) {
     try {
-      bank = JSON.parse(savedBank);
+      const parsed = JSON.parse(savedBank);
+      if (Array.isArray(parsed)) {
+        bank = validateBankItems(parsed);
+      }
     } catch (e) {
       console.error('Failed to parse saved bank', e);
     }
@@ -60,7 +81,7 @@ export function parseImportJson(jsonText: string): { characters?: Character[]; b
   }
 
   if (json.bank && Array.isArray(json.bank)) {
-    next.bank = json.bank as Item[];
+    next.bank = validateBankItems(json.bank);
   }
 
   return next;

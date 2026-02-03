@@ -10,16 +10,22 @@ interface StackSplitDialogProps {
   onCancel: () => void;
 }
 
-const StackSplitDialog: React.FC<StackSplitDialogProps> = ({ 
-  isOpen, 
-  item, 
-  targetName, 
-  onConfirm, 
-  onCancel 
+const StackSplitDialog: React.FC<StackSplitDialogProps> = ({
+  isOpen,
+  item,
+  targetName,
+  onConfirm,
+  onCancel
 }) => {
   const [count, setCount] = useState<number>(1);
   const lastActiveRef = useRef<HTMLElement | null>(null);
   const initialFocusRef = useRef<HTMLInputElement>(null);
+  const countRef = useRef(count);
+
+  // Keep countRef in sync
+  useEffect(() => {
+    countRef.current = count;
+  }, [count]);
 
   // Reset count when reopening or when switching to a different item
   useEffect(() => {
@@ -33,7 +39,12 @@ const StackSplitDialog: React.FC<StackSplitDialogProps> = ({
     lastActiveRef.current = document.activeElement as HTMLElement;
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel();
+      if (e.key === 'Escape') {
+        onCancel();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        onConfirm(countRef.current);
+      }
     };
 
     document.addEventListener('keydown', onKeyDown);
@@ -43,7 +54,7 @@ const StackSplitDialog: React.FC<StackSplitDialogProps> = ({
       document.removeEventListener('keydown', onKeyDown);
       lastActiveRef.current?.focus?.();
     };
-  }, [isOpen, onCancel]);
+  }, [isOpen, onCancel, onConfirm]);
 
   if (!isOpen || !item) return null;
 
