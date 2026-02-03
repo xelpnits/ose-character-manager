@@ -652,11 +652,12 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ containers, otherCh
                                     </span>
                                     <span className="text-[10px] text-slate-600">/</span>
                                     <div className="relative flex items-center group/weight">
-                                        <input
-                                            type="number"
-                                            value={container.maxWeight || ''}
+                                        <CommitNumberInput
+                                            value={container.maxWeight ? container.maxWeight : undefined}
                                             placeholder="∞"
-                                            onChange={(e) => handleUpdateMaxWeight(container.id, parseInt(e.target.value))}
+                                            emptyCommit="undefined"
+                                            transform={(n) => Math.max(0, n)}
+                                            onCommit={(n) => handleUpdateMaxWeight(container.id, n ?? 0)}
                                             className="w-12 bg-transparent border-b border-slate-800 hover:border-slate-600 focus:border-indigo-500 text-[10px] font-mono text-slate-400 focus:text-white text-center p-0 transition-colors"
                                         />
                                         <span className="text-[10px] text-slate-600 ml-1">cn Max</span>

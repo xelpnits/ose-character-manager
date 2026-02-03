@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Character, OSEClass, Alignment, AbilityScore, Container, Item } from '../../types';
 import { ABILITY_LABELS, CLASS_OPTIONS, LEVEL_1_SAVES } from '../../constants';
 import StatInput from './StatInput';
+import CommitNumberInput from './CommitNumberInput';
 import InventoryManager from './InventoryManager';
 import XPCalculatorModal from './XPCalculatorModal';
 import {
@@ -17,7 +18,6 @@ import {
   PlusCircle,
   MinusCircle,
   ChevronDown,
-  ScrollText,
   Backpack,
   LayoutGrid,
 } from 'lucide-react';
@@ -32,7 +32,7 @@ interface CharacterEditorProps {
   onTransferItem: (targetCharId: string, item: Item) => void;
 }
 
-type EditorTab = 'sheet' | 'notes' | 'inventory';
+type EditorTab = 'sheet' | 'inventory';
 
 const CharacterEditor: React.FC<CharacterEditorProps> = ({
   character,
@@ -203,7 +203,6 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
         {/* Desktop declutter: top-level tabs to avoid 3-column overload */}
         <div className="flex flex-wrap items-center gap-2 mb-6">
           <TabButton tab="sheet" label="Sheet" icon={<LayoutGrid className="w-4 h-4" />} />
-          <TabButton tab="notes" label="Notes" icon={<ScrollText className="w-4 h-4" />} />
           <TabButton tab="inventory" label="Inventory" icon={<Backpack className="w-4 h-4" />} />
           <div className="flex-1" />
           <div className="hidden md:flex items-center gap-3 text-[10px] uppercase font-bold tracking-widest text-slate-500">
@@ -344,10 +343,14 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                       className="w-20 bg-transparent text-5xl font-serif font-bold text-white border-none p-0 focus:ring-0 placeholder-slate-700"
                     />
                     <span className="text-2xl text-slate-500 font-serif mb-2">/</span>
-                    <input
-                      type="number"
+                    <CommitNumberInput
                       value={character.maxHp}
-                      onChange={(e) => onUpdate({ ...character, maxHp: parseInt(e.target.value) || 1 })}
+                      emptyCommit="keep"
+                      transform={(n) => Math.max(1, n)}
+                      onCommit={(n) => {
+                        if (typeof n !== 'number') return;
+                        onUpdate({ ...character, maxHp: n });
+                      }}
                       className="w-16 bg-transparent text-3xl font-serif text-slate-500 border-none p-0 mb-1 focus:ring-0 focus:text-white transition-colors"
                     />
                   </div>
@@ -367,12 +370,14 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                       >
                         <MinusCircle className="w-4 h-4" />
                       </button>
-                      <input
-                        type="number"
-                        value={character.tempHp || 0}
-                        onChange={(e) =>
-                          onUpdate({ ...character, tempHp: Math.max(0, parseInt(e.target.value) || 0) })
-                        }
+                      <CommitNumberInput
+                        value={character.tempHp ?? 0}
+                        emptyCommit="keep"
+                        transform={(n) => Math.max(0, n)}
+                        onCommit={(n) => {
+                          if (typeof n !== 'number') return;
+                          onUpdate({ ...character, tempHp: n });
+                        }}
                         className="w-12 text-center bg-cyan-950/30 border border-cyan-500/30 rounded text-cyan-300 font-bold focus:border-cyan-400"
                       />
                       <button
@@ -421,10 +426,13 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                     {/* Base Value Edit */}
                     <div className="flex items-center gap-2 mt-2 opacity-60 hover:opacity-100 transition-opacity">
                       <span className="text-[10px] uppercase text-slate-500">Base</span>
-                      <input
-                        type="number"
+                      <CommitNumberInput
                         value={character.ac}
-                        onChange={(e) => onUpdate({ ...character, ac: parseInt(e.target.value) })}
+                        emptyCommit="keep"
+                        onCommit={(n) => {
+                          if (typeof n !== 'number') return;
+                          onUpdate({ ...character, ac: n });
+                        }}
                         className="w-10 bg-transparent text-center border-b border-slate-600 focus:border-indigo-500 text-sm font-mono p-0"
                       />
                     </div>
@@ -437,10 +445,10 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                         <Shield className="w-3 h-3 text-cyan-400" />
                         <span className="text-[10px] uppercase font-bold text-slate-400">Temp Bonus</span>
                       </div>
-                      <input
-                        type="number"
-                        value={character.acModifier || 0}
-                        onChange={(e) => onUpdate({ ...character, acModifier: parseInt(e.target.value) || 0 })}
+                      <CommitNumberInput
+                        value={character.acModifier ?? 0}
+                        emptyCommit="zero"
+                        onCommit={(n) => onUpdate({ ...character, acModifier: n ?? 0 })}
                         placeholder="0"
                         className={`w-12 text-center text-sm font-bold bg-slate-950 border rounded focus:border-cyan-500 ${
                           character.acModifier ? 'border-cyan-500/50 text-cyan-400' : 'border-slate-800 text-slate-500'

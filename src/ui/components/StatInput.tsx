@@ -1,5 +1,6 @@
 import React from 'react';
 import { getModifier, formatModifier } from '../../constants';
+import CommitNumberInput from './CommitNumberInput';
 
 interface StatInputProps {
   label: string;
@@ -33,12 +34,16 @@ const StatInput: React.FC<StatInputProps> = ({ label, value, onChange }) => {
           −
         </button>
 
-        <input
-          type="number"
+        <CommitNumberInput
           min={MIN_SCORE}
           max={MAX_SCORE}
           value={value}
-          onChange={(e) => onChange(clamp(parseInt(e.target.value) || 10))}
+          emptyCommit="keep"
+          transform={clamp}
+          onCommit={(n) => {
+            if (typeof n !== 'number') return;
+            onChange(n);
+          }}
           className="w-full bg-transparent text-center font-serif text-3xl font-bold text-white focus:outline-none appearance-none m-0 p-0 z-10 cursor-pointer"
         />
 
