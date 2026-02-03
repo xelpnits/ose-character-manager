@@ -38,11 +38,23 @@ const XPCalculatorModal: React.FC<XPCalculatorModalProps> = ({
     ? currentXP + (parseInt(manualAdd) || 0)
     : currentXP + calcShare;
 
+  const handleSave = () => {
+    const canSave = mode === 'manual' ? !!manualAdd : !!totalSessionXP;
+    if (!canSave) return;
+    onSave(previewXP);
+    onClose();
+  };
+
   useEffect(() => {
     lastActiveRef.current = document.activeElement as HTMLElement;
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSave();
+      }
     };
 
     document.addEventListener('keydown', onKeyDown);
@@ -55,12 +67,7 @@ const XPCalculatorModal: React.FC<XPCalculatorModalProps> = ({
       document.removeEventListener('keydown', onKeyDown);
       lastActiveRef.current?.focus?.();
     };
-  }, [mode, onClose]);
-
-  const handleSave = () => {
-    onSave(previewXP);
-    onClose();
-  };
+  }, [mode, onClose, handleSave]);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">

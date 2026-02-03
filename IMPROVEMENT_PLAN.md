@@ -820,35 +820,35 @@ export default [
 
 ## Implementation Roadmap
 
-### Phase 1: Stability (1-2 days)
-- [ ] P0: Bank item validation
-- [ ] P1: Error boundary
-- [ ] P1: Activity log for Quick Add
+### Phase 1: Stability (1-2 days) - COMPLETED
+- [x] P0: Bank item validation
+- [x] P1: Error boundary
+- [x] P1: Activity log for Quick Add
 
-### Phase 2: Undo & Feedback (2-3 days)
-- [ ] P1: Undo for character changes
-- [ ] P1: Toast queue improvements
-- [ ] P2: Loading state
+### Phase 2: Undo & Feedback (2-3 days) - PARTIALLY COMPLETED
+- [ ] P1: Undo for character changes (deferred - requires significant refactoring)
+- [x] P1: Toast queue improvements (fixed broken implementation)
+- [x] P2: Loading state
 
-### Phase 3: Accessibility (1-2 days)
-- [ ] P2: Focus-visible styles
-- [ ] P2: Enter key confirmation
-- [ ] P2: Context menu positioning
+### Phase 3: Accessibility (1-2 days) - COMPLETED
+- [x] P2: Focus-visible styles
+- [x] P2: Enter key confirmation
+- [x] P2: Context menu positioning (already well-implemented)
 
-### Phase 4: Code Quality (2-3 days)
-- [ ] P2: Replace JSON clone with structuredClone
-- [ ] P2: Container name validation
-- [ ] P3: Split large components
-- [ ] P3: Add memoization
+### Phase 4: Code Quality (2-3 days) - COMPLETED
+- [x] P2: Replace JSON clone with structuredClone
+- [x] P2: Container name validation (already implemented)
+- [x] P3: Split large components (CharacterCard extracted)
+- [x] P3: Add memoization
 
-### Phase 5: Developer Experience (2-3 days)
-- [ ] A1: Add Vitest and initial tests
-- [ ] A2: Set up CI/CD pipeline
-- [ ] A3: Add ESLint configuration
+### Phase 5: Developer Experience (2-3 days) - COMPLETED
+- [x] A1: Add Vitest and initial tests
+- [x] A2: Set up CI/CD pipeline
+- [x] A3: Add ESLint configuration
 
-### Phase 6: Polish (1-2 days)
-- [ ] P3: Keyboard shortcuts
-- [ ] P3: Activity log improvements
+### Phase 6: Polish (1-2 days) - COMPLETED
+- [x] P3: Keyboard shortcuts (hook created)
+- [x] P3: Activity log improvements (already well-implemented)
 
 ---
 

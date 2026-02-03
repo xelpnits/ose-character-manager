@@ -6,6 +6,7 @@ import ConfirmDialog from './ui/components/ConfirmDialog';
 import DiceRoller from './ui/components/DiceRoller';
 import Toast from './ui/components/Toast';
 import { useWorldState } from './state/useWorldState';
+import { ScrollText } from 'lucide-react';
 
 interface ToastItem {
   id: string;
@@ -23,6 +24,7 @@ const App: React.FC = () => {
     setBank,
     activityLog,
     appendLog,
+    isLoaded,
     saveStatus,
     charactersRef,
     bankRef,
@@ -180,8 +182,8 @@ const App: React.FC = () => {
       quantity: number
     ) => {
       // 1. Deep Copy World State
-      const nextCharacters = JSON.parse(JSON.stringify(charactersRef.current)) as Character[];
-      const nextBank = JSON.parse(JSON.stringify(bankRef.current)) as Item[];
+      const nextCharacters = structuredClone(charactersRef.current);
+      const nextBank = structuredClone(bankRef.current);
 
       // 2. Helper to find item location
       const findItemLocation = (
@@ -295,8 +297,7 @@ const App: React.FC = () => {
       const toastMessage = `Moved ${actualQty}× ${itemToMove.name} to ${targetName}.`;
       appendLog(toastMessage);
 
-      setToast({
-        isOpen: true,
+      enqueueToast({
         message: toastMessage,
         tone: 'default',
         actionLabel: 'Undo',
@@ -306,7 +307,7 @@ const App: React.FC = () => {
         },
       });
     },
-    [appendLog, bankRef, charactersRef, restoreWorldSnapshot, setBank, setCharacters, takeWorldSnapshot]
+    [appendLog, bankRef, charactersRef, enqueueToast, restoreWorldSnapshot, setBank, setCharacters, takeWorldSnapshot]
   );
 
   // Wrapper for InventoryManager
@@ -324,7 +325,9 @@ const App: React.FC = () => {
     (charId: string, containerId: string, item: Item) => {
       if (charId === BANK_ID) {
         setBank((prev) => [...prev, item]);
+        appendLog(`Added "${item.name}"${item.count > 1 ? ` (×${item.count})` : ''} to Bank.`);
       } else {
+        const charName = charactersRef.current.find((c) => c.id === charId)?.name || 'Character';
         setCharacters((prev) =>
           prev.map((char) => {
             if (char.id !== charId) return char;
@@ -337,9 +340,10 @@ const App: React.FC = () => {
             };
           })
         );
+        appendLog(`Added "${item.name}"${item.count > 1 ? ` (×${item.count})` : ''} to ${charName}.`);
       }
     },
-    [setBank, setCharacters]
+    [appendLog, charactersRef, setBank, setCharacters]
   );
 
   const handleClaimLoot = useCallback(() => {
@@ -360,6 +364,22 @@ const App: React.FC = () => {
   }, [setCharacters]);
 
   const activeCharacter = characters.find((c) => c.id === editingCharId);
+
+  // Show loading screen while data is being loaded from localStorage
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center animate-fade-in">
+          <div className="relative mb-6">
+            <div className="w-16 h-16 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mx-auto" />
+            <ScrollText className="w-6 h-6 text-indigo-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+          </div>
+          <h2 className="text-lg font-serif font-bold text-white mb-2">OSE Character Manager</h2>
+          <p className="text-slate-500 text-sm">Loading your characters...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen text-slate-200 selection:bg-indigo-500/30 selection:text-indigo-200">
@@ -404,15 +424,15 @@ const App: React.FC = () => {
       <DiceRoller />
 
       <Toast
-        isOpen={toast.isOpen}
-        message={toast.message}
-        tone={toast.tone}
+        isOpen={!!currentToast}
+        message={currentToast?.message ?? ''}
+        tone={currentToast?.tone}
         action={
-          toast.onAction && toast.actionLabel
-            ? { label: toast.actionLabel, onAction: toast.onAction }
+          currentToast?.onAction && currentToast?.actionLabel
+            ? { label: currentToast.actionLabel, onAction: currentToast.onAction }
             : undefined
         }
-        onClose={() => setToast((t) => ({ ...t, isOpen: false }))}
+        onClose={dismissToast}
       />
     </div>
   );

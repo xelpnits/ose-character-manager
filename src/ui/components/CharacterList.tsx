@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, memo } from 'react';
 import { Character, Item, AbilityScore, ItemCategory, Container } from '../../types';
 import ConfirmDialog from './ConfirmDialog';
 import StackSplitDialog from './StackSplitDialog';
@@ -196,6 +196,133 @@ const GlobalAddItemModal: React.FC<{
     );
 };
 
+// Memoized Character Card to prevent unnecessary re-renders
+interface CharacterCardProps {
+  character: Character;
+  index: number;
+  onSelect: (char: Character) => void;
+  onDelete: (id: string) => void;
+}
+
+const CharacterCard = memo<CharacterCardProps>(
+  ({ character: char, index, onSelect, onDelete }) => (
+    <div
+      key={char.id}
+      onClick={() => onSelect(char)}
+      className="group relative h-full glass-panel rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-2 glass-card animate-slide-up"
+      style={{ animationDelay: `${index * 100}ms` }}
+    >
+      {/* Card Header / Class Banner */}
+      <div className="h-28 bg-gradient-to-br from-slate-800 to-slate-900 relative p-6 border-b border-white/5 overflow-hidden">
+        {/* Class Icon - more visible */}
+        <div className="absolute top-2 right-2 p-2 bg-white/5 rounded-xl text-white/20 group-hover:text-white/40 group-hover:bg-white/10 transition-all">
+          {getClassIcon(char.class, 'w-12 h-12')}
+        </div>
+
+        <div className="relative z-10 flex flex-col justify-end h-full">
+          <h3 className="text-2xl font-serif font-bold text-white truncate group-hover:text-indigo-300 transition-colors pr-14">
+            {char.name || 'Nameless'}
+          </h3>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-xs font-bold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20">
+              {char.class}
+            </span>
+            <span className="text-xs font-bold text-slate-500">Lvl {char.level}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Card Body */}
+      <div className="p-6 space-y-6">
+        {/* Vitals Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-slate-950/40 rounded-xl p-3 border border-white/5 flex flex-col gap-1">
+            <div className="flex items-center gap-2 mb-1">
+              <Heart className="w-4 h-4 text-red-500" />
+              <span className="text-xs text-slate-500 font-bold uppercase">HP</span>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-mono font-bold text-white">{char.hp}</span>
+              <span className="text-slate-600 text-sm">/ {char.maxHp}</span>
+            </div>
+            {char.tempHp > 0 && (
+              <div className="flex items-center gap-1 text-[10px] text-cyan-400 bg-cyan-950/50 px-1.5 py-0.5 rounded border border-cyan-500/30 w-fit animate-pulse-slow">
+                <Activity className="w-3 h-3" /> +{char.tempHp} Temp
+              </div>
+            )}
+          </div>
+          <div className="bg-slate-950/40 rounded-xl p-3 border border-white/5 flex flex-col gap-1">
+            <div className="flex items-center gap-2 mb-1">
+              <Shield className="w-4 h-4 text-indigo-500" />
+              <span className="text-xs text-slate-500 font-bold uppercase">AC</span>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-mono font-bold text-white">
+                {(char.ac || 9) + (char.acModifier || 0)}
+              </span>
+            </div>
+            {(char.acModifier || 0) !== 0 && (
+              <div className="flex items-center gap-1 text-[10px] text-cyan-400 bg-cyan-950/50 px-1.5 py-0.5 rounded border border-cyan-500/30 w-fit">
+                Mod: {char.acModifier! > 0 ? '+' : ''}
+                {char.acModifier}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Attributes Mini-View */}
+        <div className="grid grid-cols-6 gap-1">
+          {(['STR', 'INT', 'WIS', 'DEX', 'CON', 'CHA'] as AbilityScore[]).map((stat) => (
+            <div key={stat} className="text-center">
+              <div className="text-[9px] font-bold text-slate-500 mb-1">{stat}</div>
+              <div className="text-xs font-mono py-1 border rounded relative text-slate-300 bg-slate-800/50 border-white/5">
+                {char.abilities[stat]}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer Action */}
+        <div className="pt-4 flex items-center justify-between border-t border-white/5">
+          <span className="text-xs text-slate-500 italic truncate max-w-[150px]">
+            {char.backstory ? `"${char.backstory}"` : 'No legend yet...'}
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onDelete(char.id);
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors z-20 relative cursor-pointer"
+              title="Delete Character"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+            <div className="bg-indigo-600 text-white p-2 rounded-lg shadow-lg shadow-indigo-900/50 group-hover:scale-110 transition-transform">
+              <ArrowRight className="w-4 h-4" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  ),
+  (prev, next) =>
+    prev.character.id === next.character.id &&
+    prev.character.name === next.character.name &&
+    prev.character.level === next.character.level &&
+    prev.character.class === next.character.class &&
+    prev.character.hp === next.character.hp &&
+    prev.character.maxHp === next.character.maxHp &&
+    prev.character.tempHp === next.character.tempHp &&
+    prev.character.ac === next.character.ac &&
+    prev.character.acModifier === next.character.acModifier &&
+    prev.index === next.index
+);
+
+CharacterCard.displayName = 'CharacterCard';
+
 const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, activityLog, onSelect, onDelete, onNew, onClaimLoot, onMoveItem, onExport, onImport, onGlobalAddItem }) => {
   const [activeTab, setActiveTab] = useState<'roster' | 'loot' | 'inventory'>('roster');
   const [showClaimConfirm, setShowClaimConfirm] = useState(false);
@@ -380,108 +507,15 @@ const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, activit
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {characters.map((char, index) => (
-                    <div 
-                        key={char.id} 
-                        onClick={() => onSelect(char)}
-                        className="group relative h-full glass-panel rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-2 glass-card animate-slide-up"
-                        style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                    {/* Card Header / Class Banner */}
-                    <div className="h-28 bg-gradient-to-br from-slate-800 to-slate-900 relative p-6 border-b border-white/5 overflow-hidden">
-                         {/* Class Icon - more visible */}
-                        <div className="absolute top-2 right-2 p-2 bg-white/5 rounded-xl text-white/20 group-hover:text-white/40 group-hover:bg-white/10 transition-all">
-                             {getClassIcon(char.class, "w-12 h-12")}
-                        </div>
-                        
-                        <div className="relative z-10 flex flex-col justify-end h-full">
-                            <h3 className="text-2xl font-serif font-bold text-white truncate group-hover:text-indigo-300 transition-colors pr-14">
-                                {char.name || "Nameless"}
-                            </h3>
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs font-bold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20">
-                                    {char.class}
-                                </span>
-                                <span className="text-xs font-bold text-slate-500">Lvl {char.level}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Card Body */}
-                    <div className="p-6 space-y-6">
-                        {/* Vitals Grid */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-slate-950/40 rounded-xl p-3 border border-white/5 flex flex-col gap-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <Heart className="w-4 h-4 text-red-500" />
-                                    <span className="text-xs text-slate-500 font-bold uppercase">HP</span>
-                                </div>
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-2xl font-mono font-bold text-white">{char.hp}</span>
-                                    <span className="text-slate-600 text-sm">/ {char.maxHp}</span>
-                                </div>
-                                {char.tempHp > 0 && (
-                                    <div className="flex items-center gap-1 text-[10px] text-cyan-400 bg-cyan-950/50 px-1.5 py-0.5 rounded border border-cyan-500/30 w-fit animate-pulse-slow">
-                                        <Activity className="w-3 h-3" /> +{char.tempHp} Temp
-                                    </div>
-                                )}
-                            </div>
-                            <div className="bg-slate-950/40 rounded-xl p-3 border border-white/5 flex flex-col gap-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <Shield className="w-4 h-4 text-indigo-500" />
-                                    <span className="text-xs text-slate-500 font-bold uppercase">AC</span>
-                                </div>
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-2xl font-mono font-bold text-white">
-                                        {(char.ac || 9) + (char.acModifier || 0)}
-                                    </span>
-                                </div>
-                                {(char.acModifier || 0) !== 0 && (
-                                     <div className="flex items-center gap-1 text-[10px] text-cyan-400 bg-cyan-950/50 px-1.5 py-0.5 rounded border border-cyan-500/30 w-fit">
-                                        Mod: {char.acModifier! > 0 ? '+' : ''}{char.acModifier}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Attributes Mini-View */}
-                        <div className="grid grid-cols-6 gap-1">
-                            {(['STR', 'INT', 'WIS', 'DEX', 'CON', 'CHA'] as AbilityScore[]).map(stat => (
-                                <div key={stat} className="text-center">
-                                    <div className="text-[9px] font-bold text-slate-500 mb-1">{stat}</div>
-                                    <div className="text-xs font-mono py-1 border rounded relative text-slate-300 bg-slate-800/50 border-white/5">
-                                        {char.abilities[stat]}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        
-                        {/* Footer Action */}
-                        <div className="pt-4 flex items-center justify-between border-t border-white/5">
-                            <span className="text-xs text-slate-500 italic truncate max-w-[150px]">
-                                {char.backstory ? `"${char.backstory}"` : "No legend yet..."}
-                            </span>
-                            <div className="flex gap-2">
-                                <button 
-                                    onClick={(e) => { 
-                                        e.preventDefault(); 
-                                        e.stopPropagation(); 
-                                        onDelete(char.id); 
-                                    }}
-                                    onMouseDown={(e) => e.stopPropagation()}
-                                    className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors z-20 relative cursor-pointer"
-                                    title="Delete Character"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                                <div className="bg-indigo-600 text-white p-2 rounded-lg shadow-lg shadow-indigo-900/50 group-hover:scale-110 transition-transform">
-                                    <ArrowRight className="w-4 h-4" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    </div>
-                ))}
+                  {characters.map((char, index) => (
+                    <CharacterCard
+                      key={char.id}
+                      character={char}
+                      index={index}
+                      onSelect={onSelect}
+                      onDelete={onDelete}
+                    />
+                  ))}
                 </div>
             )}
         </>
