@@ -425,7 +425,7 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                   <div className="flex-grow flex flex-col justify-center items-center relative z-10">
                     {/* Main AC Display */}
                     <div className="flex items-baseline gap-2">
-                      <span className="text-6xl font-serif font-bold text-white">{(character.ac || 9) - (character.acModifier || 0)}</span>
+                      <span className="text-6xl font-serif font-bold text-white">{(character.ac || 9) + (character.acModifier || 0)}</span>
                       {(character.acModifier || 0) !== 0 && (
                         <span className="text-lg font-mono text-cyan-400 animate-pulse">(Mod)</span>
                       )}
