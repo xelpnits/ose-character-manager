@@ -34,6 +34,66 @@ interface CharacterEditorProps {
 
 type EditorTab = 'sheet' | 'inventory';
 
+// Moved outside to prevent recreation on every render
+const QuickModButton: React.FC<{ val: number; onClick: () => void; label?: string }> = ({ val, onClick, label }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-[10px] font-bold text-slate-300 transition-colors"
+  >
+    {label || (val > 0 ? `+${val}` : val)}
+  </button>
+);
+
+const TabButton: React.FC<{
+  tab: EditorTab;
+  activeTab: EditorTab;
+  label: string;
+  icon: React.ReactNode;
+  onClick: (tab: EditorTab) => void;
+}> = ({ tab, activeTab, label, icon, onClick }) => (
+  <button
+    type="button"
+    onClick={() => onClick(tab)}
+    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors border ${
+      activeTab === tab
+        ? 'bg-white/10 text-white border-white/10'
+        : 'bg-transparent text-slate-400 border-transparent hover:bg-white/5 hover:text-white'
+    }`}
+    aria-current={activeTab === tab ? 'page' : undefined}
+  >
+    <span className="opacity-80">{icon}</span>
+    {label}
+  </button>
+);
+
+const CollapsiblePanel: React.FC<{
+  id: string;
+  title: string;
+  icon?: React.ReactNode;
+  isOpen: boolean;
+  onToggle: (id: string, open: boolean) => void;
+  children: React.ReactNode;
+}> = ({ id, title, icon, isOpen, onToggle, children }) => (
+  <details
+    open={isOpen}
+    onToggle={(e) => {
+      const nextOpen = (e.currentTarget as HTMLDetailsElement).open;
+      onToggle(id, nextOpen);
+    }}
+    className="glass-panel rounded-2xl group"
+  >
+    <summary className="list-none cursor-pointer select-none px-5 py-4 flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        {icon}
+        <h2 className="text-xs font-bold uppercase tracking-widest text-indigo-400">{title}</h2>
+      </div>
+      <ChevronDown className="w-4 h-4 text-slate-500 transition-transform group-open:rotate-180" />
+    </summary>
+    <div className="px-5 pb-5 pt-1">{children}</div>
+  </details>
+);
+
 const CharacterEditor: React.FC<CharacterEditorProps> = ({
   character,
   otherCharacters,
@@ -131,77 +191,15 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
     return { base, label, title };
   }, [saveStatus]);
 
-  // Helper for quick buttons
-  const QuickModButton = ({ val, onClick, label }: { val: number; onClick: () => void; label?: string }) => (
-    <button
-      onClick={onClick}
-      className="px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-[10px] font-bold text-slate-300 transition-colors"
-    >
-      {label || (val > 0 ? `+${val}` : val)}
-    </button>
-  );
+  const [openPanels, setOpenPanels] = useState<Record<string, boolean>>({
+    identity: true,
+    abilities: true,
+    'saving-throws': false,
+  });
 
-  const TabButton = ({
-    tab,
-    label,
-    icon,
-  }: {
-    tab: EditorTab;
-    label: string;
-    icon: React.ReactNode;
-  }) => (
-    <button
-      type="button"
-      onClick={() => setActiveTab(tab)}
-      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors border ${
-        activeTab === tab
-          ? 'bg-white/10 text-white border-white/10'
-          : 'bg-transparent text-slate-400 border-transparent hover:bg-white/5 hover:text-white'
-      }`}
-      aria-current={activeTab === tab ? 'page' : undefined}
-    >
-      <span className="opacity-80">{icon}</span>
-      {label}
-    </button>
-  );
-
-  const [openPanels, setOpenPanels] = useState<Record<string, boolean>>({});
-
-  const CollapsiblePanel = ({
-    id,
-    title,
-    icon,
-    defaultOpen = true,
-    children,
-  }: {
-    id: string;
-    title: string;
-    icon?: React.ReactNode;
-    defaultOpen?: boolean;
-    children: React.ReactNode;
-  }) => {
-    const isOpen = openPanels[id] ?? defaultOpen;
-
-    return (
-      <details
-        open={isOpen}
-        onToggle={(e) => {
-          const nextOpen = (e.currentTarget as HTMLDetailsElement).open;
-          setOpenPanels((prev) => ({ ...prev, [id]: nextOpen }));
-        }}
-        className="glass-panel rounded-2xl group"
-      >
-        <summary className="list-none cursor-pointer select-none px-5 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {icon}
-            <h2 className="text-xs font-bold uppercase tracking-widest text-indigo-400">{title}</h2>
-          </div>
-          <ChevronDown className="w-4 h-4 text-slate-500 transition-transform group-open:rotate-180" />
-        </summary>
-        <div className="px-5 pb-5 pt-1">{children}</div>
-      </details>
-    );
-  };
+  const handlePanelToggle = useCallback((id: string, open: boolean) => {
+    setOpenPanels((prev) => ({ ...prev, [id]: open }));
+  }, []);
 
   return (
     <div className="min-h-screen bg-arcane-950 pb-24 text-slate-200">
@@ -261,8 +259,8 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
       <div className="max-w-screen-2xl mx-auto p-4 md:p-6 lg:p-8">
         {/* Desktop declutter: top-level tabs to avoid 3-column overload */}
         <div className="flex flex-wrap items-center gap-2 mb-6">
-          <TabButton tab="sheet" label="Sheet" icon={<LayoutGrid className="w-4 h-4" />} />
-          <TabButton tab="inventory" label="Inventory" icon={<Backpack className="w-4 h-4" />} />
+          <TabButton tab="sheet" activeTab={activeTab} label="Sheet" icon={<LayoutGrid className="w-4 h-4" />} onClick={setActiveTab} />
+          <TabButton tab="inventory" activeTab={activeTab} label="Inventory" icon={<Backpack className="w-4 h-4" />} onClick={setActiveTab} />
           <div className="flex-1" />
           <div className="hidden md:flex items-center gap-3 text-[10px] uppercase font-bold tracking-widest text-slate-500">
             <span className="hidden lg:inline">Class:</span>
@@ -277,7 +275,7 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 lg:gap-8 items-start">
             {/* LEFT: Identity & Rules */}
             <div className="xl:col-span-4 space-y-6">
-              <CollapsiblePanel id="identity" title="Identity" icon={<Zap className="w-3 h-3" />} defaultOpen>
+              <CollapsiblePanel id="identity" title="Identity" icon={<Zap className="w-3 h-3" />} isOpen={openPanels['identity'] ?? true} onToggle={handlePanelToggle}>
                 <div className="space-y-3">
                   <div>
                     <label className="text-[10px] uppercase text-slate-500 font-bold">Class</label>
@@ -314,7 +312,7 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                 </div>
               </CollapsiblePanel>
 
-              <CollapsiblePanel id="abilities" title="Abilities" defaultOpen>
+              <CollapsiblePanel id="abilities" title="Abilities" isOpen={openPanels['abilities'] ?? true} onToggle={handlePanelToggle}>
                 <div className="grid grid-cols-2 gap-3">
                   {(Object.keys(character.abilities) as AbilityScore[]).map((key) => (
                     <StatInput
@@ -327,7 +325,7 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                 </div>
               </CollapsiblePanel>
 
-              <CollapsiblePanel id="saving-throws" title="Saving Throws" icon={<Skull className="w-3 h-3" />} defaultOpen={false}>
+              <CollapsiblePanel id="saving-throws" title="Saving Throws" icon={<Skull className="w-3 h-3" />} isOpen={openPanels['saving-throws'] ?? false} onToggle={handlePanelToggle}>
                 <div className="space-y-3">
                   {LEVEL_1_SAVES[character.class] && (
                     <div className="flex items-center justify-between gap-3 p-2 rounded-lg border border-white/5 bg-white/5">
