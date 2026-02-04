@@ -27,10 +27,10 @@ function loadActivityLog(): ActivityLogEntry[] {
 
     return parsed
       .filter((e) => e && typeof e === 'object')
-      .map((e) => ({
-        id: String((e as any).id ?? crypto.randomUUID()),
-        ts: Number((e as any).ts ?? Date.now()),
-        message: String((e as any).message ?? ''),
+      .map((e: Record<string, unknown>) => ({
+        id: String(e.id ?? crypto.randomUUID()),
+        ts: Number(e.ts ?? Date.now()),
+        message: String(e.message ?? ''),
       }))
       .filter((e) => e.message.trim().length > 0)
       .slice(-ACTIVITY_LOG_MAX);

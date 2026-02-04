@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { X, Trophy, Users, Plus, ArrowRight, UserMinus } from 'lucide-react';
 
 interface XPCalculatorModalProps {
@@ -38,12 +38,12 @@ const XPCalculatorModal: React.FC<XPCalculatorModalProps> = ({
     ? currentXP + (parseInt(manualAdd) || 0)
     : currentXP + calcShare;
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     const canSave = mode === 'manual' ? !!manualAdd : !!totalSessionXP;
     if (!canSave) return;
     onSave(previewXP);
     onClose();
-  };
+  }, [mode, manualAdd, totalSessionXP, previewXP, onSave, onClose]);
 
   useEffect(() => {
     lastActiveRef.current = document.activeElement as HTMLElement;

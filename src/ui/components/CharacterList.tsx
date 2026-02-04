@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, memo } from 'react';
-import { Character, Item, AbilityScore, ItemCategory, Container } from '../../types';
+import { Character, Item, AbilityScore, ItemCategory } from '../../types';
 import ConfirmDialog from './ConfirmDialog';
 import StackSplitDialog from './StackSplitDialog';
 import ImportExportControls from './ImportExportControls';
@@ -7,7 +7,15 @@ import ActivityLogModal from './ActivityLogModal';
 import type { ActivityLogEntry } from '../../state/useWorldState';
 import { getCategoryIcon, getClassIcon } from '../../utils'; 
 import { BANK_ID } from '../../types';
-import { Plus, Trash2, ArrowRight, Shield, Heart, Crown, Coins, Sparkles, Users, PackageOpen, CheckCircle, Search, Box, Zap, HelpCircle, Landmark, Filter, Backpack, ChevronDown, ChevronRight, Activity, MoreHorizontal, ScrollText } from 'lucide-react';
+import { Plus, Trash2, ArrowRight, Shield, Heart, Crown, Sparkles, Users, Search, Box, Zap, HelpCircle, Landmark, ChevronDown, ChevronRight, Activity, MoreHorizontal, ScrollText } from 'lucide-react';
+
+interface ExtendedItem extends Item {
+  charId: string;
+  charName: string;
+  containerId: string;
+  containerName: string;
+  isBank: boolean;
+}
 
 interface CharacterListProps {
   characters: Character[];
@@ -106,6 +114,7 @@ const GlobalAddItemModal: React.FC<{
 
     useEffect(() => {
         if (activeContainers.length > 0) setSelectedContainerId(activeContainers[0].id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedCharId]);
 
     useEffect(() => {
@@ -334,8 +343,8 @@ const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, activit
   const [expandedCategories, setExpandedCategories] = useState<string[]>(Object.values(ItemCategory));
 
   // Interaction State
-  const [contextMenu, setContextMenu] = useState<{ x: number, y: number, item: Item, sourceCharId: string, sourceContainerId: string } | null>(null);
-  const [splitDialog, setSplitDialog] = useState<{ isOpen: boolean, item: Item | null, targetId: string, targetName: string } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number, y: number, item: ExtendedItem, sourceCharId: string, sourceContainerId: string } | null>(null);
+  const [splitDialog, setSplitDialog] = useState<{ isOpen: boolean, item: ExtendedItem | null, targetId: string, targetName: string } | null>(null);
 
   // Calculate Global Loot (New Items only)
   const newLootItems = characters.flatMap(char => 
@@ -379,16 +388,17 @@ const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, activit
       );
   };
 
-  const handleClaimRequest = () => {
+  const _handleClaimRequest = () => {
      setShowClaimConfirm(true);
   };
+  void _handleClaimRequest; // Prevent unused warning
 
   const executeClaim = () => {
       onClaimLoot();
       setShowClaimConfirm(false);
   };
 
-  const openItemMenuAt = (x: number, y: number, item: any) => {
+  const openItemMenuAt = (x: number, y: number, item: ExtendedItem) => {
       setContextMenu({
           x,
           y,
@@ -398,7 +408,7 @@ const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, activit
       });
   };
 
-  const handleItemContextMenu = (e: React.MouseEvent, item: any) => {
+  const handleItemContextMenu = (e: React.MouseEvent, item: ExtendedItem) => {
       e.preventDefault();
       openItemMenuAt(e.clientX, e.clientY, item);
   };
@@ -736,8 +746,8 @@ const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, activit
               onCancel={() => setSplitDialog(null)}
               onConfirm={(count) => {
                   onMoveItem(
-                      (splitDialog.item as any).charId, 
-                      (splitDialog.item as any).containerId,
+                      splitDialog.item!.charId,
+                      splitDialog.item!.containerId,
                       splitDialog.item!.id,
                       splitDialog.targetId,
                       count

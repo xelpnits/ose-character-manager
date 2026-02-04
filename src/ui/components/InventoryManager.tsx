@@ -4,12 +4,12 @@ import ConfirmDialog from './ConfirmDialog';
 import StackSplitDialog from './StackSplitDialog';
 import CommitNumberInput from './CommitNumberInput';
 import { getCategoryIcon, calculateTotalItems, calculateTotalWeight, calculateContainerWeight } from '../../utils';
-import { 
-  Plus, 
-  Trash2, 
-  Box, 
-  Briefcase, 
-  Backpack, 
+import {
+  Plus,
+  Trash2,
+  Box,
+  Briefcase,
+  Backpack,
   Shirt,
   X,
   Sword,
@@ -25,7 +25,6 @@ import {
   HelpCircle,
   AlertTriangle,
   Archive,
-  Layers,
   MoreHorizontal
 } from 'lucide-react';
 

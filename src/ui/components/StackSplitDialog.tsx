@@ -31,6 +31,7 @@ const StackSplitDialog: React.FC<StackSplitDialogProps> = ({
   useEffect(() => {
     if (!isOpen || !item) return;
     setCount(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, item?.id]);
 
   useEffect(() => {

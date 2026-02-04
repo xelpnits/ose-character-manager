@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Dices, X, Send, User, Settings, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { Dices, X, Send, User, Settings, Trash2 } from 'lucide-react';
 
 interface RollMessage {
   id: string;
