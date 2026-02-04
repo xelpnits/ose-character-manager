@@ -602,8 +602,8 @@ const CharacterList: React.FC<CharacterListProps> = ({ characters, bank, activit
                                                 <div className="col-span-5 flex flex-col min-w-0">
                                                     <div className="font-semibold text-slate-200 group-hover:text-emerald-300 transition-colors truncate flex items-center gap-2">
                                                         <span className="truncate">{item.name}</span>
-                                                        {item.isMagical && <Zap className="w-3 h-3 text-purple-400 fill-current" title="Magical" />}
-                                                        {item.isUnidentified && <HelpCircle className="w-3 h-3 text-cyan-400" title="Unidentified" />}
+                                                        {item.isMagical && <span title="Magical"><Zap className="w-3 h-3 text-purple-400 fill-current" /></span>}
+                                                        {item.isUnidentified && <span title="Unidentified"><HelpCircle className="w-3 h-3 text-cyan-400" /></span>}
                                                     </div>
                                                     <div className="flex flex-wrap gap-1.5 mt-1">
                                                         <span className="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded flex items-center border border-slate-700">

@@ -81,7 +81,7 @@ const DiceRoller: React.FC = () => {
           id: crypto.randomUUID(),
           sender: 'System',
           timestamp: new Date(),
-          type: 'system',
+          type: 'system' as const,
           text: `${tempName} has joined the table.`
       }].slice(-MAX_DICE_MESSAGES));
   };

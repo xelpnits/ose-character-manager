@@ -30,6 +30,10 @@ export enum ItemCategory {
   Potion = 'Potion',
   Treasure = 'Treasure',
   Scroll = 'Scroll',
+  Tool = 'Tool',
+  Consumable = 'Consumable',
+  Container = 'Container',
+  Misc = 'Misc',
 }
 
 export interface SavingThrows {
