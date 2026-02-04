@@ -30,6 +30,7 @@ const DEFAULT_SAVE_MODS = {
  * are PRESERVED as temporary, NOT merged into base stats. This prevents spell buffs
  * or situational bonuses from becoming permanent.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function migrateCharacter(raw: any): Character {
   // Base abilities: preserve as-is, defaulting to 10 for missing scores.
   // DO NOT merge abilityModifiers into base - they are temporary buffs.
@@ -61,6 +62,7 @@ export function migrateCharacter(raw: any): Character {
     abilities: migratedAbilities,
 
     // 1) Container types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     containers: (raw?.containers ?? []).map((cont: any) => ({
       ...cont,
       type: cont.type || (cont.isFixed ? 'equipped' : 'carried'),
@@ -77,6 +79,7 @@ export function migrateCharacter(raw: any): Character {
   } as Character;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function migrateCharacters(rawChars: any): Character[] {
   if (!Array.isArray(rawChars)) return [];
   return rawChars.map(migrateCharacter);

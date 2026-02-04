@@ -408,6 +408,7 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                     </div>
                   ))}
                 </div>
+                </div>
               </CollapsiblePanel>
             </div>
 
@@ -548,7 +549,7 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                       </div>
                       <CommitNumberInput
                         value={character.acModifier ?? 0}
-                        emptyCommit="zero"
+                        emptyCommit={0}
                         onCommit={(n) => {
                           const next = n ?? 0;
                           if (next === (character.acModifier ?? 0)) return;
