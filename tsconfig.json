@@ -13,6 +13,11 @@
     "types": [
       "node"
     ],
+
+    /* Strict Type-Checking */
+    "strict": true,
+    "noImplicitReturns": true,
+
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "moduleDetection": "force",

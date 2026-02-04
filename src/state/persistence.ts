@@ -58,8 +58,15 @@ export function loadFromLocalStorage(): { characters: Character[]; bank: Item[] 
 }
 
 export function saveToLocalStorage(characters: Character[], bank: Item[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(characters));
-  localStorage.setItem(BANK_STORAGE_KEY, JSON.stringify(bank));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(characters));
+    localStorage.setItem(BANK_STORAGE_KEY, JSON.stringify(bank));
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+      throw new Error('Storage quota exceeded. Please export your data and clear old characters.');
+    }
+    throw e;
+  }
 }
 
 export function makeExportBlob(characters: Character[], bank: Item[]): Blob {

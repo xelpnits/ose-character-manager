@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { Character, INITIAL_CHARACTER, Item, BANK_ID } from './types';
+import { areItemsStackable } from './domain/inventory';
 import CharacterList from './ui/components/CharacterList';
 import CharacterEditor from './ui/components/CharacterEditor';
 import ConfirmDialog from './ui/components/ConfirmDialog';
@@ -265,14 +266,8 @@ const App: React.FC = () => {
         return;
       }
 
-      // AUTO-STACKING LOGIC
-      const existingStack = targetList.find(
-        (i) =>
-          i.name === itemToMove.name &&
-          i.category === itemToMove.category &&
-          i.isMagical === itemToMove.isMagical &&
-          i.goldValue === itemToMove.goldValue
-      );
+      // AUTO-STACKING LOGIC - use consistent stacking rules
+      const existingStack = targetList.find((i) => areItemsStackable(i, itemToMove));
 
       if (existingStack) {
         existingStack.count += actualQty;

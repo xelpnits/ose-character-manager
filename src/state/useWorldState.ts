@@ -136,6 +136,13 @@ export function useWorldState() {
 
   const importData = useCallback(
     (file: File) => {
+      // Prevent DoS from very large files
+      const MAX_IMPORT_SIZE = 10 * 1024 * 1024; // 10MB
+      if (file.size > MAX_IMPORT_SIZE) {
+        alert('File too large. Maximum 10MB allowed.');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
@@ -144,7 +151,7 @@ export function useWorldState() {
           );
           if (nextChars) setCharacters(nextChars);
           if (nextBank) setBank(nextBank);
-          appendLog(`Imported backup “${file.name}”.`);
+          appendLog(`Imported backup "${file.name}".`);
           alert('Data successfully imported!');
         } catch (err) {
           console.error(err);

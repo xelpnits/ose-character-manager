@@ -5,7 +5,7 @@ import StackSplitDialog from './StackSplitDialog';
 import ImportExportControls from './ImportExportControls';
 import ActivityLogModal from './ActivityLogModal';
 import type { ActivityLogEntry } from '../../state/useWorldState';
-import { getCategoryIcon, getClassIcon } from '../../utils'; 
+import { getCategoryIcon, getClassIcon } from '../icons'; 
 import { BANK_ID } from '../../types';
 import { Plus, Trash2, ArrowRight, Shield, Heart, Crown, Sparkles, Users, Search, Box, Zap, HelpCircle, Landmark, ChevronDown, ChevronRight, Activity, MoreHorizontal, ScrollText } from 'lucide-react';
 

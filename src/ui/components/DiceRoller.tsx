@@ -13,7 +13,48 @@ interface RollMessage {
   text?: string;
 }
 
+// Serializable version for localStorage
+interface StoredRollMessage {
+  id: string;
+  sender: string;
+  timestamp: string; // ISO string
+  type: 'roll' | 'system';
+  formula?: string;
+  total?: number;
+  rolls?: number[];
+  modifier?: number;
+  text?: string;
+}
+
 const MAX_DICE_MESSAGES = 200;
+const DICE_LOG_KEY = 'ose_dice_log';
+
+function loadDiceLog(): RollMessage[] {
+  try {
+    const raw = localStorage.getItem(DICE_LOG_KEY);
+    if (!raw) return [];
+    const parsed: StoredRollMessage[] = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((msg) => ({
+      ...msg,
+      timestamp: new Date(msg.timestamp),
+    })).slice(-MAX_DICE_MESSAGES);
+  } catch {
+    return [];
+  }
+}
+
+function saveDiceLog(messages: RollMessage[]): void {
+  try {
+    const toStore: StoredRollMessage[] = messages.slice(-MAX_DICE_MESSAGES).map((msg) => ({
+      ...msg,
+      timestamp: msg.timestamp.toISOString(),
+    }));
+    localStorage.setItem(DICE_LOG_KEY, JSON.stringify(toStore));
+  } catch {
+    // Best-effort save
+  }
+}
 
 const DiceRoller: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,8 +62,8 @@ const DiceRoller: React.FC = () => {
   const [tempName, setTempName] = useState('');
   const [isNameSet, setIsNameSet] = useState(false);
 
-  // Chat State
-  const [messages, setMessages] = useState<RollMessage[]>([]);
+  // Chat State - load from localStorage
+  const [messages, setMessages] = useState<RollMessage[]>(() => loadDiceLog());
   
   // Manual Input State
   const [count, setCount] = useState<number>(1);
@@ -42,17 +83,24 @@ const DiceRoller: React.FC = () => {
     if (savedName) {
       setUsername(savedName);
       setIsNameSet(true);
-    } else {
-        // Add initial welcome message
-        setMessages([{
-            id: 'init',
-            sender: 'System',
-            timestamp: new Date(),
-            type: 'system',
-            text: 'Welcome to the table.'
-        }]);
     }
+    // Only show welcome message if no messages loaded and no saved name
+    if (messages.length === 0 && !savedName) {
+      setMessages([{
+        id: 'init',
+        sender: 'System',
+        timestamp: new Date(),
+        type: 'system',
+        text: 'Welcome to the table.'
+      }]);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Persist dice log when messages change
+  useEffect(() => {
+    saveDiceLog(messages);
+  }, [messages]);
 
   // Auto-scroll chat
   useEffect(() => {

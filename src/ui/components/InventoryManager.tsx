@@ -3,7 +3,8 @@ import { Container, Item, Character, ItemCategory, ContainerType, BANK_ID } from
 import ConfirmDialog from './ConfirmDialog';
 import StackSplitDialog from './StackSplitDialog';
 import CommitNumberInput from './CommitNumberInput';
-import { getCategoryIcon, calculateTotalItems, calculateTotalWeight, calculateContainerWeight } from '../../utils';
+import { getCategoryIcon } from '../icons';
+import { calculateTotalItems, calculateTotalWeight, calculateContainerWeight } from '../../domain/rules/weight';
 import {
   Plus,
   Trash2,
@@ -204,7 +205,7 @@ const ContextMenu: React.FC<{
 const ItemDetailModal: React.FC<{
   item: Item;
   onClose: () => void;
-  onSave: (updates: Partial<Item>) => void;
+  onSave: (updatedItem: Item) => void;
 }> = ({ item, onClose, onSave }) => {
   const [data, setData] = useState({ 
     ...item,

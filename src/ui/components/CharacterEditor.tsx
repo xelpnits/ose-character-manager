@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Character, OSEClass, Alignment, AbilityScore, Container, Item, SavingThrows } from '../../types';
-import { ABILITY_LABELS, CLASS_OPTIONS, LEVEL_1_SAVES } from '../../constants';
+import { ABILITY_LABELS, CLASS_OPTIONS } from '../labels';
+import { LEVEL_1_SAVES } from '../../domain/rules/modifiers';
 import StatInput from './StatInput';
 import CommitNumberInput from './CommitNumberInput';
 import InventoryManager from './InventoryManager';
