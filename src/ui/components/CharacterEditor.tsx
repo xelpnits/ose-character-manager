@@ -6,6 +6,8 @@ import StatInput from './StatInput';
 import CommitNumberInput from './CommitNumberInput';
 import InventoryManager from './InventoryManager';
 import XPCalculatorModal from './XPCalculatorModal';
+import MagicTab from './MagicTab';
+import AttackPanel from './AttackPanel';
 import {
   ArrowLeft,
   Shield,
@@ -21,6 +23,8 @@ import {
   ChevronDown,
   Backpack,
   LayoutGrid,
+  Sparkles,
+  Swords,
 } from 'lucide-react';
 
 interface CharacterEditorProps {
@@ -33,7 +37,7 @@ interface CharacterEditorProps {
   onTransferItem: (targetCharId: string, item: Item) => void;
 }
 
-type EditorTab = 'sheet' | 'inventory';
+type EditorTab = 'sheet' | 'inventory' | 'magic' | 'combat';
 
 // Moved outside to prevent recreation on every render
 const QuickModButton: React.FC<{ val: number; onClick: () => void; label?: string }> = ({ val, onClick, label }) => (
@@ -262,6 +266,8 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
         <div className="flex flex-wrap items-center gap-2 mb-6">
           <TabButton tab="sheet" activeTab={activeTab} label="Sheet" icon={<LayoutGrid className="w-4 h-4" />} onClick={setActiveTab} />
           <TabButton tab="inventory" activeTab={activeTab} label="Inventory" icon={<Backpack className="w-4 h-4" />} onClick={setActiveTab} />
+          <TabButton tab="magic" activeTab={activeTab} label="Magic" icon={<Sparkles className="w-4 h-4" />} onClick={setActiveTab} />
+          <TabButton tab="combat" activeTab={activeTab} label="Combat" icon={<Swords className="w-4 h-4" />} onClick={setActiveTab} />
           <div className="flex-1" />
           <div className="hidden md:flex items-center gap-3 text-[10px] uppercase font-bold tracking-widest text-slate-500">
             <span className="hidden lg:inline">Class:</span>
@@ -661,6 +667,21 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
               onTransferItem={onTransferItem}
             />
           </div>
+        )}
+
+        {activeTab === 'magic' && (
+          <MagicTab
+            character={character}
+            onUpdate={onUpdate}
+            onUpdateUndoable={onUpdateUndoable}
+          />
+        )}
+
+        {activeTab === 'combat' && (
+          <AttackPanel
+            character={character}
+            onUpdate={onUpdate}
+          />
         )}
       </div>
 

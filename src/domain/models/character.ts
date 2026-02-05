@@ -44,6 +44,36 @@ export interface SavingThrows {
   spells: number;
 }
 
+/**
+ * A learned spell in a character's spellbook or prayer list.
+ */
+export interface Spell {
+  id: string;
+  name: string;
+  level: number; // Spell level (1-6)
+  description?: string;
+  duration?: string;
+  range?: string;
+}
+
+/**
+ * A combat action log entry for attack rolls.
+ */
+export interface CombatLogEntry {
+  id: string;
+  timestamp: number; // epoch ms
+  type: 'attack' | 'damage' | 'save';
+  weaponName: string;
+  attackRoll?: number; // d20 roll (natural)
+  attackBonus?: number;
+  attackTotal?: number;
+  targetAC?: number;
+  hit?: boolean;
+  damageRoll?: string; // e.g., "[3, 4] + 2"
+  damageTotal?: number;
+  notes?: string; // Critical hit, fumble, etc.
+}
+
 export interface Item {
   id: string;
   name: string;
@@ -64,6 +94,9 @@ export interface Item {
   // Loot & XP Tracking
   goldValue?: number; // Value in GP
   isUnclaimed?: boolean; // If true, this item counts towards the "New Items" XP calculation
+
+  // Combat properties
+  isRanged?: boolean; // True for ranged weapons (uses DEX for attack)
 }
 
 export type ContainerType = 'equipped' | 'carried' | 'stored';
@@ -104,6 +137,12 @@ export interface Character {
   backstory: string;
   containers: Container[]; // New structure
   xp: number;
+
+  // Magic
+  learnedSpells: Spell[];
+
+  // Combat Log (per-character action history)
+  combatLog: CombatLogEntry[];
 }
 
 export const DEFAULT_SAVES: SavingThrows = {
@@ -155,4 +194,6 @@ export const INITIAL_CHARACTER: Character = {
     { id: 'backpack', name: 'Backpack', type: 'carried', items: [], maxWeight: 400 },
   ],
   xp: 0,
+  learnedSpells: [],
+  combatLog: [],
 };
