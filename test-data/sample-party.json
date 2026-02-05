@@ -1,0 +1,433 @@
+{
+  "version": 1,
+  "date": "2026-02-05T12:00:00.000Z",
+  "characters": [
+    {
+      "id": "char-fighter-001",
+      "name": "Bjorn Ironside",
+      "class": "Fighter",
+      "level": 5,
+      "alignment": "Lawful",
+      "title": "Swashbuckler",
+      "abilities": { "STR": 17, "INT": 10, "WIS": 11, "DEX": 14, "CON": 16, "CHA": 12 },
+      "abilityModifiers": { "STR": 0, "INT": 0, "WIS": 0, "DEX": 0, "CON": 0, "CHA": 0 },
+      "hp": 38,
+      "maxHp": 42,
+      "tempHp": 5,
+      "ac": 2,
+      "acModifier": 0,
+      "savingThrows": { "death": 10, "wands": 11, "paralysis": 10, "breath": 13, "spells": 12 },
+      "saveModifiers": { "death": 1 },
+      "backstory": "A veteran warrior from the northern lands, Bjorn has fought in countless battles and bears the scars to prove it. He seeks glory and gold in equal measure.",
+      "containers": [
+        {
+          "id": "worn-fighter",
+          "name": "Worn / Belt",
+          "type": "equipped",
+          "items": [
+            { "id": "item-001", "name": "Plate Mail", "count": 1, "weight": 500, "category": "Armor", "armor": 3, "isEquipped": true, "goldValue": 60 },
+            { "id": "item-002", "name": "Shield +1", "count": 1, "weight": 100, "category": "Armor", "armor": 1, "isEquipped": true, "isMagical": true, "goldValue": 500 },
+            { "id": "item-003", "name": "Longsword", "count": 1, "weight": 40, "category": "Weapon", "damage": "1d8", "isEquipped": true, "goldValue": 10 },
+            { "id": "item-004", "name": "Dagger", "count": 2, "weight": 10, "category": "Weapon", "damage": "1d4", "goldValue": 3 }
+          ],
+          "isFixed": true
+        },
+        {
+          "id": "backpack-fighter",
+          "name": "Backpack",
+          "type": "carried",
+          "items": [
+            { "id": "item-005", "name": "Rope (50')", "count": 1, "weight": 50, "category": "Tool", "goldValue": 1 },
+            { "id": "item-006", "name": "Torch", "count": 6, "weight": 10, "category": "General", "goldValue": 0.03 },
+            { "id": "item-007", "name": "Rations (1 week)", "count": 1, "weight": 70, "category": "Consumable", "goldValue": 5 },
+            { "id": "item-008", "name": "Waterskin", "count": 1, "weight": 20, "category": "General", "goldValue": 1 },
+            { "id": "item-009", "name": "Potion of Healing", "count": 2, "weight": 5, "category": "Potion", "isMagical": true, "charges": 1, "maxCharges": 1, "goldValue": 250, "description": "Heals 1d6+1 HP when consumed" },
+            { "id": "item-010", "name": "Gold Coins", "count": 127, "weight": 1, "category": "Treasure", "goldValue": 1 }
+          ],
+          "maxWeight": 400
+        },
+        {
+          "id": "saddlebags-fighter",
+          "name": "Saddlebags",
+          "type": "stored",
+          "items": [
+            { "id": "item-011", "name": "Spare Longsword", "count": 1, "weight": 40, "category": "Weapon", "damage": "1d8", "goldValue": 10 },
+            { "id": "item-012", "name": "Oil Flask", "count": 4, "weight": 10, "category": "Consumable", "goldValue": 2 }
+          ],
+          "maxWeight": 600
+        }
+      ],
+      "xp": 16500,
+      "learnedSpells": [],
+      "combatLog": [
+        { "id": "log-001", "timestamp": 1738756800000, "type": "attack", "weaponName": "Longsword", "attackRoll": 18, "attackBonus": 5, "attackTotal": 23, "targetAC": 5, "hit": true, "damageRoll": "[6] + 2", "damageTotal": 8 },
+        { "id": "log-002", "timestamp": 1738756860000, "type": "attack", "weaponName": "Longsword", "attackRoll": 4, "attackBonus": 5, "attackTotal": 9, "targetAC": 5, "hit": false }
+      ]
+    },
+    {
+      "id": "char-magicuser-001",
+      "name": "Elvira the Enchantress",
+      "class": "Magic-User",
+      "level": 4,
+      "alignment": "Neutral",
+      "title": "Theurgist",
+      "abilities": { "STR": 8, "INT": 18, "WIS": 14, "DEX": 13, "CON": 10, "CHA": 11 },
+      "abilityModifiers": { "STR": 2, "INT": 0, "WIS": 0, "DEX": 0, "CON": 0, "CHA": 0 },
+      "hp": 9,
+      "maxHp": 11,
+      "tempHp": 0,
+      "ac": 7,
+      "acModifier": 2,
+      "savingThrows": { "death": 13, "wands": 14, "paralysis": 13, "breath": 16, "spells": 12 },
+      "saveModifiers": { "spells": 2 },
+      "backstory": "Elvira spent decades studying the arcane arts in the Ivory Tower before venturing out to seek lost magical knowledge.",
+      "containers": [
+        {
+          "id": "worn-mage",
+          "name": "Worn / Belt",
+          "type": "equipped",
+          "items": [
+            { "id": "item-013", "name": "Robes", "count": 1, "weight": 20, "category": "Armor", "armor": 0, "isEquipped": true, "goldValue": 5 },
+            { "id": "item-014", "name": "Staff", "count": 1, "weight": 40, "category": "Weapon", "damage": "1d6", "isEquipped": true, "goldValue": 2 },
+            { "id": "item-015", "name": "Dagger", "count": 1, "weight": 10, "category": "Weapon", "damage": "1d4", "goldValue": 3 }
+          ],
+          "isFixed": true
+        },
+        {
+          "id": "backpack-mage",
+          "name": "Satchel",
+          "type": "carried",
+          "items": [
+            { "id": "item-016", "name": "Spellbook", "count": 1, "weight": 30, "category": "Misc", "goldValue": 50, "description": "Contains all learned spells" },
+            { "id": "item-017", "name": "Ink & Quills", "count": 1, "weight": 5, "category": "Tool", "goldValue": 10 },
+            { "id": "item-018", "name": "Scroll of Fireball", "count": 1, "weight": 1, "category": "Scroll", "isMagical": true, "charges": 1, "maxCharges": 1, "goldValue": 500, "description": "Deals 6d6 fire damage in a 20' radius" },
+            { "id": "item-019", "name": "Wand of Magic Missiles", "count": 1, "weight": 5, "category": "Weapon", "isMagical": true, "charges": 12, "maxCharges": 20, "goldValue": 1000, "damage": "1d6+1", "description": "Shoots 3 missiles, each dealing 1d6+1 damage" },
+            { "id": "item-020", "name": "Unknown Potion (Red)", "count": 1, "weight": 5, "category": "Potion", "isMagical": true, "isUnidentified": true, "description": "A bubbling red liquid" },
+            { "id": "item-021", "name": "Component Pouch", "count": 1, "weight": 20, "category": "Tool", "goldValue": 25 },
+            { "id": "item-022", "name": "Gold Coins", "count": 85, "weight": 1, "category": "Treasure", "goldValue": 1 }
+          ],
+          "maxWeight": 300
+        }
+      ],
+      "xp": 10200,
+      "learnedSpells": [
+        { "id": "spell-001", "name": "Magic Missile", "level": 1, "description": "Creates 1 missile per 2 caster levels, each dealing 1d6+1 damage", "range": "150'", "duration": "Instant" },
+        { "id": "spell-002", "name": "Sleep", "level": 1, "description": "Puts 2d8 HD of creatures to sleep", "range": "240'", "duration": "4d4 turns" },
+        { "id": "spell-003", "name": "Shield", "level": 1, "description": "AC 2 vs missiles, AC 4 vs other attacks", "range": "Self", "duration": "2 turns" },
+        { "id": "spell-004", "name": "Detect Magic", "level": 1, "description": "Detects magic within 60'", "range": "60'", "duration": "2 turns" },
+        { "id": "spell-005", "name": "Invisibility", "level": 2, "description": "Target becomes invisible until attacking", "range": "Touch", "duration": "Until broken" },
+        { "id": "spell-006", "name": "Web", "level": 2, "description": "Creates sticky webs that trap creatures", "range": "10'", "duration": "48 turns" },
+        { "id": "spell-007", "name": "Mirror Image", "level": 2, "description": "Creates 1d4 illusory duplicates", "range": "Self", "duration": "6 turns" }
+      ],
+      "combatLog": []
+    },
+    {
+      "id": "char-cleric-001",
+      "name": "Brother Marcus",
+      "class": "Cleric",
+      "level": 3,
+      "alignment": "Lawful",
+      "title": "Priest",
+      "abilities": { "STR": 12, "INT": 11, "WIS": 17, "DEX": 10, "CON": 14, "CHA": 15 },
+      "abilityModifiers": { "STR": 0, "INT": 0, "WIS": 0, "DEX": 0, "CON": 0, "CHA": 0 },
+      "hp": 18,
+      "maxHp": 18,
+      "tempHp": 0,
+      "ac": 4,
+      "acModifier": 0,
+      "savingThrows": { "death": 10, "wands": 11, "paralysis": 13, "breath": 16, "spells": 12 },
+      "saveModifiers": {},
+      "backstory": "A devoted servant of the Light, Brother Marcus left the monastery to bring healing and hope to a dark world.",
+      "containers": [
+        {
+          "id": "worn-cleric",
+          "name": "Worn / Belt",
+          "type": "equipped",
+          "items": [
+            { "id": "item-023", "name": "Chain Mail", "count": 1, "weight": 400, "category": "Armor", "armor": 4, "isEquipped": true, "goldValue": 40 },
+            { "id": "item-024", "name": "Shield", "count": 1, "weight": 100, "category": "Armor", "armor": 1, "isEquipped": true, "goldValue": 10 },
+            { "id": "item-025", "name": "Mace", "count": 1, "weight": 30, "category": "Weapon", "damage": "1d6", "isEquipped": true, "goldValue": 5 },
+            { "id": "item-026", "name": "Holy Symbol (Silver)", "count": 1, "weight": 5, "category": "Misc", "goldValue": 25, "description": "Required for turning undead and casting spells" }
+          ],
+          "isFixed": true
+        },
+        {
+          "id": "backpack-cleric",
+          "name": "Backpack",
+          "type": "carried",
+          "items": [
+            { "id": "item-027", "name": "Holy Water", "count": 3, "weight": 5, "category": "Consumable", "goldValue": 25, "damage": "1d8", "description": "Damages undead" },
+            { "id": "item-028", "name": "Bandages", "count": 1, "weight": 5, "category": "Tool", "goldValue": 1 },
+            { "id": "item-029", "name": "Rations (1 week)", "count": 1, "weight": 70, "category": "Consumable", "goldValue": 5 },
+            { "id": "item-030", "name": "Wooden Stakes", "count": 3, "weight": 5, "category": "Weapon", "damage": "1d4", "goldValue": 0 },
+            { "id": "item-031", "name": "Gold Coins", "count": 52, "weight": 1, "category": "Treasure", "goldValue": 1 }
+          ],
+          "maxWeight": 400
+        }
+      ],
+      "xp": 4800,
+      "learnedSpells": [
+        { "id": "spell-008", "name": "Cure Light Wounds", "level": 1, "description": "Heals 1d6+1 HP", "range": "Touch", "duration": "Instant" },
+        { "id": "spell-009", "name": "Detect Evil", "level": 1, "description": "Detects evil intent within 120'", "range": "120'", "duration": "6 turns" },
+        { "id": "spell-010", "name": "Protection from Evil", "level": 1, "description": "+1 to saves, -1 to evil attackers", "range": "Touch", "duration": "12 turns" },
+        { "id": "spell-011", "name": "Light", "level": 1, "description": "Creates light in 15' radius", "range": "120'", "duration": "12 turns" },
+        { "id": "spell-012", "name": "Bless", "level": 2, "description": "+1 to attack and morale for allies", "range": "60'", "duration": "6 turns" }
+      ],
+      "combatLog": []
+    },
+    {
+      "id": "char-thief-001",
+      "name": "Silvia Shadowcloak",
+      "class": "Thief",
+      "level": 6,
+      "alignment": "Chaotic",
+      "title": "Sharper",
+      "abilities": { "STR": 11, "INT": 13, "WIS": 10, "DEX": 18, "CON": 12, "CHA": 14 },
+      "abilityModifiers": { "STR": 0, "INT": 0, "WIS": 0, "DEX": 0, "CON": 0, "CHA": 0 },
+      "hp": 22,
+      "maxHp": 24,
+      "tempHp": 0,
+      "ac": 4,
+      "acModifier": 0,
+      "savingThrows": { "death": 11, "wands": 12, "paralysis": 11, "breath": 14, "spells": 13 },
+      "saveModifiers": { "wands": 1 },
+      "backstory": "Born in the slums, Silvia learned to survive by her wits and nimble fingers. Now she seeks fortune in dungeons rather than pockets.",
+      "containers": [
+        {
+          "id": "worn-thief",
+          "name": "Worn / Belt",
+          "type": "equipped",
+          "items": [
+            { "id": "item-032", "name": "Leather Armor +1", "count": 1, "weight": 150, "category": "Armor", "armor": 3, "isEquipped": true, "isMagical": true, "goldValue": 750 },
+            { "id": "item-033", "name": "Short Sword", "count": 1, "weight": 30, "category": "Weapon", "damage": "1d6", "isEquipped": true, "goldValue": 7 },
+            { "id": "item-034", "name": "Dagger", "count": 3, "weight": 10, "category": "Weapon", "damage": "1d4", "goldValue": 3 },
+            { "id": "item-035", "name": "Shortbow", "count": 1, "weight": 30, "category": "Weapon", "damage": "1d6", "isEquipped": true, "isRanged": true, "goldValue": 25 },
+            { "id": "item-036", "name": "Arrows", "count": 20, "weight": 1, "category": "Consumable", "goldValue": 0.05 }
+          ],
+          "isFixed": true
+        },
+        {
+          "id": "backpack-thief",
+          "name": "Backpack",
+          "type": "carried",
+          "items": [
+            { "id": "item-037", "name": "Thieves' Tools", "count": 1, "weight": 10, "category": "Tool", "goldValue": 25, "description": "Required for picking locks and disarming traps" },
+            { "id": "item-038", "name": "Grappling Hook", "count": 1, "weight": 40, "category": "Tool", "goldValue": 25 },
+            { "id": "item-039", "name": "Rope (50')", "count": 1, "weight": 50, "category": "Tool", "goldValue": 1 },
+            { "id": "item-040", "name": "Caltrops", "count": 2, "weight": 20, "category": "Weapon", "goldValue": 1 },
+            { "id": "item-041", "name": "Mirror (Hand)", "count": 1, "weight": 5, "category": "Tool", "goldValue": 5, "description": "Useful for looking around corners" },
+            { "id": "item-042", "name": "Crowbar", "count": 1, "weight": 30, "category": "Tool", "goldValue": 2 },
+            { "id": "item-043", "name": "Potion of Invisibility", "count": 1, "weight": 5, "category": "Potion", "isMagical": true, "charges": 1, "maxCharges": 1, "goldValue": 400, "description": "Invisibility for 6 turns or until attacking" },
+            { "id": "item-044", "name": "Lockpicks (Masterwork)", "count": 1, "weight": 5, "category": "Tool", "isMagical": false, "goldValue": 50, "description": "+5% to Open Locks" },
+            { "id": "item-045", "name": "Gemstones (Mixed)", "count": 5, "weight": 1, "category": "Treasure", "goldValue": 50, "isUnclaimed": true, "description": "Assorted gems from recent heist" },
+            { "id": "item-046", "name": "Gold Coins", "count": 234, "weight": 1, "category": "Treasure", "goldValue": 1 }
+          ],
+          "maxWeight": 400
+        },
+        {
+          "id": "belt-pouch-thief",
+          "name": "Belt Pouch",
+          "type": "equipped",
+          "items": [
+            { "id": "item-047", "name": "Smoke Bomb", "count": 2, "weight": 5, "category": "Consumable", "goldValue": 10, "description": "Creates thick smoke in 10' radius" }
+          ],
+          "maxWeight": 50
+        }
+      ],
+      "xp": 24000,
+      "learnedSpells": [],
+      "combatLog": [
+        { "id": "log-003", "timestamp": 1738756900000, "type": "attack", "weaponName": "Short Sword (Backstab)", "attackRoll": 20, "attackBonus": 4, "attackTotal": 24, "targetAC": 6, "hit": true, "damageRoll": "[4] x 3", "damageTotal": 12, "notes": "Critical! Backstab damage tripled" }
+      ]
+    },
+    {
+      "id": "char-elf-001",
+      "name": "Aelindra Starweaver",
+      "class": "Elf",
+      "level": 4,
+      "alignment": "Neutral",
+      "title": "Medium/Warrior",
+      "abilities": { "STR": 13, "INT": 16, "WIS": 12, "DEX": 15, "CON": 11, "CHA": 14 },
+      "abilityModifiers": { "STR": 0, "INT": 0, "WIS": 0, "DEX": 0, "CON": 0, "CHA": 0 },
+      "hp": 16,
+      "maxHp": 16,
+      "tempHp": 0,
+      "ac": 3,
+      "acModifier": 0,
+      "savingThrows": { "death": 10, "wands": 11, "paralysis": 9, "breath": 13, "spells": 11 },
+      "saveModifiers": {},
+      "backstory": "An elven warrior-mage from the ancient Silverwood, Aelindra combines martial prowess with arcane knowledge.",
+      "containers": [
+        {
+          "id": "worn-elf",
+          "name": "Worn / Belt",
+          "type": "equipped",
+          "items": [
+            { "id": "item-048", "name": "Elven Chain Mail", "count": 1, "weight": 200, "category": "Armor", "armor": 4, "isEquipped": true, "isMagical": true, "goldValue": 2000, "description": "Light mithril chain, allows spellcasting" },
+            { "id": "item-049", "name": "Shield", "count": 1, "weight": 100, "category": "Armor", "armor": 1, "isEquipped": true, "goldValue": 10 },
+            { "id": "item-050", "name": "Longsword +1", "count": 1, "weight": 40, "category": "Weapon", "damage": "1d8+1", "isEquipped": true, "isMagical": true, "goldValue": 1500 },
+            { "id": "item-051", "name": "Longbow", "count": 1, "weight": 30, "category": "Weapon", "damage": "1d6", "isEquipped": true, "isRanged": true, "goldValue": 40 },
+            { "id": "item-052", "name": "Arrows", "count": 20, "weight": 1, "category": "Consumable", "goldValue": 0.05 }
+          ],
+          "isFixed": true
+        },
+        {
+          "id": "backpack-elf",
+          "name": "Backpack",
+          "type": "carried",
+          "items": [
+            { "id": "item-053", "name": "Spellbook", "count": 1, "weight": 30, "category": "Misc", "goldValue": 50 },
+            { "id": "item-054", "name": "Rope (Silk, 50')", "count": 1, "weight": 25, "category": "Tool", "goldValue": 10, "description": "Lightweight and strong" },
+            { "id": "item-055", "name": "Elven Waybread", "count": 5, "weight": 1, "category": "Consumable", "goldValue": 5, "description": "One piece sustains for a full day" },
+            { "id": "item-056", "name": "Unknown Ring", "count": 1, "weight": 0, "category": "Misc", "isMagical": true, "isUnidentified": true, "goldValue": 100 },
+            { "id": "item-057", "name": "Gold Coins", "count": 156, "weight": 1, "category": "Treasure", "goldValue": 1 }
+          ],
+          "maxWeight": 400
+        }
+      ],
+      "xp": 16000,
+      "learnedSpells": [
+        { "id": "spell-013", "name": "Charm Person", "level": 1, "description": "Target humanoid treats caster as trusted friend", "range": "120'", "duration": "Special" },
+        { "id": "spell-014", "name": "Read Magic", "level": 1, "description": "Read magical writing", "range": "Self", "duration": "1 turn" },
+        { "id": "spell-015", "name": "Light", "level": 1, "description": "Creates light in 15' radius", "range": "120'", "duration": "12 turns" },
+        { "id": "spell-016", "name": "Phantasmal Force", "level": 2, "description": "Creates illusion", "range": "240'", "duration": "Concentration" }
+      ],
+      "combatLog": []
+    },
+    {
+      "id": "char-dwarf-001",
+      "name": "Thorgrim Stoneshield",
+      "class": "Dwarf",
+      "level": 5,
+      "alignment": "Lawful",
+      "title": "Myrmidon",
+      "abilities": { "STR": 16, "INT": 10, "WIS": 13, "DEX": 11, "CON": 18, "CHA": 9 },
+      "abilityModifiers": { "STR": 0, "INT": 0, "WIS": 0, "DEX": 0, "CON": 0, "CHA": 0 },
+      "hp": 48,
+      "maxHp": 48,
+      "tempHp": 0,
+      "ac": 1,
+      "acModifier": 0,
+      "savingThrows": { "death": 6, "wands": 7, "paralysis": 8, "breath": 10, "spells": 9 },
+      "saveModifiers": {},
+      "backstory": "Exiled from his mountain home after a political dispute, Thorgrim seeks to prove his honor through deeds of valor.",
+      "containers": [
+        {
+          "id": "worn-dwarf",
+          "name": "Worn / Belt",
+          "type": "equipped",
+          "items": [
+            { "id": "item-058", "name": "Plate Mail", "count": 1, "weight": 500, "category": "Armor", "armor": 3, "isEquipped": true, "goldValue": 60 },
+            { "id": "item-059", "name": "Shield +2", "count": 1, "weight": 100, "category": "Armor", "armor": 2, "isEquipped": true, "isMagical": true, "goldValue": 2500 },
+            { "id": "item-060", "name": "Battle Axe", "count": 1, "weight": 50, "category": "Weapon", "damage": "1d8", "isEquipped": true, "goldValue": 7 },
+            { "id": "item-061", "name": "Hand Axe", "count": 2, "weight": 30, "category": "Weapon", "damage": "1d6", "goldValue": 4, "isRanged": true }
+          ],
+          "isFixed": true
+        },
+        {
+          "id": "backpack-dwarf",
+          "name": "Backpack",
+          "type": "carried",
+          "items": [
+            { "id": "item-062", "name": "Mining Pick", "count": 1, "weight": 60, "category": "Tool", "goldValue": 3, "damage": "1d6", "description": "Also useful as a weapon" },
+            { "id": "item-063", "name": "Lantern (Bullseye)", "count": 1, "weight": 30, "category": "Tool", "goldValue": 10 },
+            { "id": "item-064", "name": "Oil Flask", "count": 4, "weight": 10, "category": "Consumable", "goldValue": 2 },
+            { "id": "item-065", "name": "Pitons (Iron)", "count": 12, "weight": 5, "category": "Tool", "goldValue": 0.1 },
+            { "id": "item-066", "name": "Hammer", "count": 1, "weight": 30, "category": "Tool", "goldValue": 2 },
+            { "id": "item-067", "name": "Dwarven Ale (Keg)", "count": 1, "weight": 100, "category": "Consumable", "goldValue": 20, "description": "For morale purposes" },
+            { "id": "item-068", "name": "Gold Coins", "count": 312, "weight": 1, "category": "Treasure", "goldValue": 1 }
+          ],
+          "maxWeight": 400
+        },
+        {
+          "id": "chest-dwarf",
+          "name": "Treasure Chest",
+          "type": "stored",
+          "items": [
+            { "id": "item-069", "name": "Gold Bar", "count": 2, "weight": 100, "category": "Treasure", "goldValue": 100, "isUnclaimed": true },
+            { "id": "item-070", "name": "Silver Coins", "count": 500, "weight": 0.1, "category": "Treasure", "goldValue": 0.1 },
+            { "id": "item-071", "name": "Ruby (Large)", "count": 1, "weight": 1, "category": "Treasure", "goldValue": 1000, "isUnclaimed": true, "description": "A magnificent deep red ruby" }
+          ],
+          "maxWeight": 1000
+        }
+      ],
+      "xp": 34000,
+      "learnedSpells": [],
+      "combatLog": []
+    },
+    {
+      "id": "char-halfling-001",
+      "name": "Pippin Thistlefoot",
+      "class": "Halfling",
+      "level": 3,
+      "alignment": "Neutral",
+      "title": "Warrior",
+      "abilities": { "STR": 11, "INT": 12, "WIS": 13, "DEX": 17, "CON": 15, "CHA": 14 },
+      "abilityModifiers": { "STR": 0, "INT": 0, "WIS": 0, "DEX": 0, "CON": 0, "CHA": 0 },
+      "hp": 16,
+      "maxHp": 16,
+      "tempHp": 0,
+      "ac": 4,
+      "acModifier": 0,
+      "savingThrows": { "death": 8, "wands": 9, "paralysis": 10, "breath": 13, "spells": 12 },
+      "saveModifiers": {},
+      "backstory": "Pippin left his cozy burrow seeking adventure and the finest foods of distant lands. Turns out dungeons have neither.",
+      "containers": [
+        {
+          "id": "worn-halfling",
+          "name": "Worn / Belt",
+          "type": "equipped",
+          "items": [
+            { "id": "item-072", "name": "Leather Armor", "count": 1, "weight": 150, "category": "Armor", "armor": 2, "isEquipped": true, "goldValue": 20 },
+            { "id": "item-073", "name": "Shield", "count": 1, "weight": 100, "category": "Armor", "armor": 1, "isEquipped": true, "goldValue": 10 },
+            { "id": "item-074", "name": "Short Sword", "count": 1, "weight": 30, "category": "Weapon", "damage": "1d6", "isEquipped": true, "goldValue": 7 },
+            { "id": "item-075", "name": "Sling", "count": 1, "weight": 2, "category": "Weapon", "damage": "1d4", "isEquipped": true, "isRanged": true, "goldValue": 0 },
+            { "id": "item-076", "name": "Sling Stones", "count": 30, "weight": 0.5, "category": "Consumable", "goldValue": 0 }
+          ],
+          "isFixed": true
+        },
+        {
+          "id": "backpack-halfling",
+          "name": "Backpack",
+          "type": "carried",
+          "items": [
+            { "id": "item-077", "name": "Rations (Iron, 1 week)", "count": 2, "weight": 70, "category": "Consumable", "goldValue": 15 },
+            { "id": "item-078", "name": "Cooking Pot", "count": 1, "weight": 30, "category": "Tool", "goldValue": 2 },
+            { "id": "item-079", "name": "Spices (Assorted)", "count": 1, "weight": 5, "category": "General", "goldValue": 10, "description": "A halfling essential" },
+            { "id": "item-080", "name": "Tinderbox", "count": 1, "weight": 5, "category": "Tool", "goldValue": 3 },
+            { "id": "item-081", "name": "Bedroll", "count": 1, "weight": 50, "category": "General", "goldValue": 2 },
+            { "id": "item-082", "name": "Cloak of Elvenkind", "count": 1, "weight": 10, "category": "Misc", "isMagical": true, "goldValue": 1000, "description": "+10% to Hide in Shadows" },
+            { "id": "item-083", "name": "Potion of Speed", "count": 1, "weight": 5, "category": "Potion", "isMagical": true, "charges": 1, "maxCharges": 1, "goldValue": 500, "description": "Double movement and attacks for 1 turn" },
+            { "id": "item-084", "name": "Gold Coins", "count": 78, "weight": 1, "category": "Treasure", "goldValue": 1 }
+          ],
+          "maxWeight": 300
+        }
+      ],
+      "xp": 8000,
+      "learnedSpells": [],
+      "combatLog": []
+    }
+  ],
+  "bank": [
+    { "id": "bank-001", "name": "Gold Coins (Party Fund)", "count": 1500, "weight": 1, "category": "Treasure", "goldValue": 1, "description": "Shared party treasury" },
+    { "id": "bank-002", "name": "Silver Coins", "count": 3420, "weight": 0.1, "category": "Treasure", "goldValue": 0.1 },
+    { "id": "bank-003", "name": "Copper Coins", "count": 8500, "weight": 0.01, "category": "Treasure", "goldValue": 0.01 },
+    { "id": "bank-004", "name": "Electrum Coins", "count": 240, "weight": 0.5, "category": "Treasure", "goldValue": 0.5 },
+    { "id": "bank-005", "name": "Platinum Coins", "count": 35, "weight": 5, "category": "Treasure", "goldValue": 5 },
+    { "id": "bank-006", "name": "Unidentified Wand", "count": 1, "weight": 5, "category": "Weapon", "isMagical": true, "isUnidentified": true, "description": "Made of pale wood with silver inlay" },
+    { "id": "bank-007", "name": "Potion of Healing", "count": 5, "weight": 5, "category": "Potion", "isMagical": true, "charges": 1, "maxCharges": 1, "goldValue": 250, "description": "Heals 1d6+1 HP" },
+    { "id": "bank-008", "name": "Antidote", "count": 3, "weight": 5, "category": "Potion", "goldValue": 50, "description": "Cures poison" },
+    { "id": "bank-009", "name": "Scroll of Protection from Evil", "count": 2, "weight": 1, "category": "Scroll", "isMagical": true, "goldValue": 250 },
+    { "id": "bank-010", "name": "Scroll of Remove Curse", "count": 1, "weight": 1, "category": "Scroll", "isMagical": true, "goldValue": 500 },
+    { "id": "bank-011", "name": "Torch", "count": 20, "weight": 10, "category": "General", "goldValue": 0.03 },
+    { "id": "bank-012", "name": "Oil Flask", "count": 10, "weight": 10, "category": "Consumable", "goldValue": 2 },
+    { "id": "bank-013", "name": "Rope (50')", "count": 3, "weight": 50, "category": "Tool", "goldValue": 1 },
+    { "id": "bank-014", "name": "Iron Spikes", "count": 24, "weight": 5, "category": "Tool", "goldValue": 0.1 },
+    { "id": "bank-015", "name": "Rations (1 week)", "count": 5, "weight": 70, "category": "Consumable", "goldValue": 5 },
+    { "id": "bank-016", "name": "Mysterious Crystal Orb", "count": 1, "weight": 20, "category": "Misc", "isMagical": true, "isUnidentified": true, "goldValue": 500, "isUnclaimed": true, "description": "Glows faintly in darkness, found in the tomb" },
+    { "id": "bank-017", "name": "Golden Chalice", "count": 1, "weight": 30, "category": "Treasure", "goldValue": 400, "isUnclaimed": true, "description": "Ornate chalice with ruby inlays" },
+    { "id": "bank-018", "name": "Silver Candelabra", "count": 2, "weight": 50, "category": "Treasure", "goldValue": 75, "isUnclaimed": true },
+    { "id": "bank-019", "name": "Jeweled Dagger (Decorative)", "count": 1, "weight": 10, "category": "Treasure", "goldValue": 350, "isUnclaimed": true, "description": "Too ornate for combat, but valuable" },
+    { "id": "bank-020", "name": "Tapestry (Ancient)", "count": 1, "weight": 200, "category": "Treasure", "goldValue": 600, "isUnclaimed": true, "description": "Depicts a forgotten battle" }
+  ]
+}
