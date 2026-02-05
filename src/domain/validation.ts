@@ -28,6 +28,31 @@ const ItemSchema = z.object({
   isUnidentified: z.boolean().optional(),
   goldValue: z.number().optional(),
   isUnclaimed: z.boolean().optional(),
+  isRanged: z.boolean().optional(),
+});
+
+const SpellSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  level: z.number().min(1).max(9),
+  description: z.string().optional(),
+  duration: z.string().optional(),
+  range: z.string().optional(),
+});
+
+const CombatLogEntrySchema = z.object({
+  id: z.string(),
+  timestamp: z.number(),
+  type: z.enum(['attack', 'damage', 'save']),
+  weaponName: z.string(),
+  attackRoll: z.number().optional(),
+  attackBonus: z.number().optional(),
+  attackTotal: z.number().optional(),
+  targetAC: z.number().optional(),
+  hit: z.boolean().optional(),
+  damageRoll: z.string().optional(),
+  damageTotal: z.number().optional(),
+  notes: z.string().optional(),
 });
 
 const ContainerSchema = z.object({
@@ -104,6 +129,12 @@ const CharacterSchema = z.object({
   backstory: z.string().optional(),
   containers: z.array(ContainerSchema),
   xp: z.number(),
+
+  // Magic
+  learnedSpells: z.array(SpellSchema).optional(),
+
+  // Combat Log
+  combatLog: z.array(CombatLogEntrySchema).optional(),
 });
 
 export const ExportSchema = z.object({

@@ -76,6 +76,12 @@ export function migrateCharacter(raw: any): Character {
     abilityModifiers: migratedAbilityMods,
 
     saveModifiers: raw?.saveModifiers ?? { ...DEFAULT_SAVE_MODS },
+
+    // 4) Magic - default to empty spell list
+    learnedSpells: Array.isArray(raw?.learnedSpells) ? raw.learnedSpells : [],
+
+    // 5) Combat log - default to empty
+    combatLog: Array.isArray(raw?.combatLog) ? raw.combatLog : [],
   } as Character;
 }
 
