@@ -101,10 +101,7 @@ src/
 ├── main.tsx                     # React DOM mount point
 ├── index.css                    # Tailwind imports + custom styles
 │
-└── (compatibility shims)
-    ├── types.ts                 # Re-exports from domain/models
-    ├── utils.ts                 # Re-exports from domain/rules
-    └── constants.ts             # Re-exports from labels
+└── types.ts                     # Re-exports from domain/models (shim)
 ```
 
 ## Key Domain Models
@@ -340,21 +337,17 @@ When a Level 1 character's class changes, default saving throws for that class a
 3. Add state in parent component (`isOpen`, `setIsOpen`)
 4. Use conditional rendering: `{isModalOpen && <Modal ... />}`
 
-## Known Issues (from UX_REVIEW.md)
+## Known Issues
 
 ### P1 (High Priority)
 - Toast queue can lose undo capability on rapid actions
-- Activity log doesn't capture all bank operations
 - No undo for character field changes (name, level, class)
 
 ### P2 (Medium Priority)
-- Container name allows blank input
 - Character name has no max length
-- Context menu can overflow viewport
 - StatInput allows typing values outside 3-18 range
 
 ### P3 (Low Priority)
-- No loading state on initial load
 - Minimal keyboard shortcuts
 - Activity log doesn't auto-scroll to bottom
 
@@ -369,16 +362,26 @@ npm run build
 
 **Deployment:** Any static hosting (Vercel, Netlify, GitHub Pages, S3, etc.)
 
-**No CI/CD configured** - would need GitHub Actions or similar
+**CI:** GitHub Actions (`.github/workflows/ci.yml`) runs typecheck, lint, tests, and build on PRs
 
 ## Testing Notes
 
-**No test framework installed.** Manual testing checklist from MIGRATION_NOTES.md:
+**Test framework:** Vitest with jsdom environment. Run tests with:
+```bash
+npm run test:run    # Single run
+npm run test        # Watch mode
+```
+
+**Current test coverage:**
+- `src/domain/inventory.test.ts` - Item stacking rules
+- `src/domain/rules/modifiers.test.ts` - Ability modifier calculations
+- `src/domain/validation.test.ts` - Zod schema validation
+
+**Manual testing checklist:**
 - Import backup file with temporary modifiers - verify preserved
 - Create character, add temp HP/AC, reload - verify persist
 - Change Level 1 character class - verify saves auto-update
 - Export and re-import - verify all fields roundtrip
-- Build completes without TypeScript errors
 
 ## File References
 

@@ -53,7 +53,9 @@ const CommitNumberInput: React.FC<CommitNumberInputProps> = ({
       return;
     }
 
-    const parsed = Number(trimmed);
+    // Support "+5" or "-3" style input for modifiers
+    const normalized = trimmed.replace(/^\+/, '');
+    const parsed = Number(normalized);
     if (!Number.isFinite(parsed)) {
       setDraft(committedText);
       return;
@@ -66,7 +68,8 @@ const CommitNumberInput: React.FC<CommitNumberInputProps> = ({
   return (
     <input
       {...rest}
-      type="number"
+      type="text"
+      inputMode="numeric"
       value={draft}
       onFocus={(e) => {
         isFocusedRef.current = true;

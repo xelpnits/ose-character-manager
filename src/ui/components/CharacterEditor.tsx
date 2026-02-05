@@ -371,19 +371,35 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
                         {/* Temp Save Mod */}
                         <div className="flex flex-col items-end">
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="numeric"
                             placeholder="±"
-                            value={character.saveModifiers?.[saveName as keyof typeof character.saveModifiers] || ''}
-                            onChange={(e) =>
-                              onUpdate({
-                                ...character,
-                                saveModifiers: {
-                                  ...(character.saveModifiers || {}),
-                                  [saveName]: parseInt(e.target.value) || 0,
-                                },
-                              })
-                            }
-                            className={`w-8 h-6 text-center text-[10px] bg-slate-950 border rounded focus:ring-0 focus:border-cyan-500 ${
+                            value={character.saveModifiers?.[saveName as keyof typeof character.saveModifiers] ?? ''}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              // Allow empty, or parse number (with optional +/- prefix)
+                              if (raw === '' || raw === '-' || raw === '+') {
+                                onUpdate({
+                                  ...character,
+                                  saveModifiers: {
+                                    ...(character.saveModifiers || {}),
+                                    [saveName]: 0,
+                                  },
+                                });
+                                return;
+                              }
+                              const parsed = parseInt(raw.replace(/^\+/, ''), 10);
+                              if (!Number.isNaN(parsed)) {
+                                onUpdate({
+                                  ...character,
+                                  saveModifiers: {
+                                    ...(character.saveModifiers || {}),
+                                    [saveName]: parsed,
+                                  },
+                                });
+                              }
+                            }}
+                            className={`w-10 h-6 text-center text-[10px] bg-slate-950 border rounded focus:ring-0 focus:border-cyan-500 ${
                               (character.saveModifiers?.[saveName as keyof typeof character.saveModifiers] || 0) !== 0
                                 ? 'border-cyan-500/50 text-cyan-400'
                                 : 'border-slate-800 text-slate-600'
@@ -393,14 +409,20 @@ const CharacterEditor: React.FC<CharacterEditorProps> = ({
 
                         {/* Base Save */}
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
                           value={val}
-                          onChange={(e) =>
-                            onUpdate({
-                              ...character,
-                              savingThrows: { ...character.savingThrows, [saveName]: parseInt(e.target.value) || 0 },
-                            })
-                          }
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            if (raw === '') return;
+                            const parsed = parseInt(raw, 10);
+                            if (!Number.isNaN(parsed)) {
+                              onUpdate({
+                                ...character,
+                                savingThrows: { ...character.savingThrows, [saveName]: parsed },
+                              });
+                            }
+                          }}
                           className="w-10 bg-slate-900 border border-slate-700 rounded text-center text-sm font-mono text-white focus:border-indigo-500"
                         />
                       </div>
