@@ -1,64 +1,65 @@
 import { describe, it, expect } from 'vitest';
 import { OSEClass, AbilityScore, INITIAL_CHARACTER } from '../../types';
 import {
-  getTHAC0,
+  getBaseAttackBonus,
   getMeleeAttackBonus,
   getRangedAttackBonus,
   getMeleeDamageBonus,
-  getTargetToHit,
   doesAttackHit,
 } from './thac0';
 
-describe('thac0', () => {
-  describe('getTHAC0', () => {
-    it('returns 19 for level 1 characters', () => {
-      expect(getTHAC0(OSEClass.Fighter, 1)).toBe(19);
-      expect(getTHAC0(OSEClass.MagicUser, 1)).toBe(19);
-      expect(getTHAC0(OSEClass.Cleric, 1)).toBe(19);
-      expect(getTHAC0(OSEClass.Thief, 1)).toBe(19);
+describe('thac0 (ascending AC)', () => {
+  describe('getBaseAttackBonus', () => {
+    it('returns 0 for level 1 characters', () => {
+      expect(getBaseAttackBonus(OSEClass.Fighter, 1)).toBe(0);
+      expect(getBaseAttackBonus(OSEClass.MagicUser, 1)).toBe(0);
+      expect(getBaseAttackBonus(OSEClass.Cleric, 1)).toBe(0);
+      expect(getBaseAttackBonus(OSEClass.Thief, 1)).toBe(0);
     });
 
     it('uses fighter progression for fighting classes', () => {
       // Fighter-types improve at levels 4 and 7
-      expect(getTHAC0(OSEClass.Fighter, 3)).toBe(19);
-      expect(getTHAC0(OSEClass.Fighter, 4)).toBe(17);
-      expect(getTHAC0(OSEClass.Fighter, 7)).toBe(14);
+      expect(getBaseAttackBonus(OSEClass.Fighter, 3)).toBe(0);
+      expect(getBaseAttackBonus(OSEClass.Fighter, 4)).toBe(2);
+      expect(getBaseAttackBonus(OSEClass.Fighter, 7)).toBe(5);
 
       // Dwarf, Elf, Halfling use same progression
-      expect(getTHAC0(OSEClass.Dwarf, 4)).toBe(17);
-      expect(getTHAC0(OSEClass.Elf, 4)).toBe(17);
-      expect(getTHAC0(OSEClass.Halfling, 4)).toBe(17);
+      expect(getBaseAttackBonus(OSEClass.Dwarf, 4)).toBe(2);
+      expect(getBaseAttackBonus(OSEClass.Elf, 4)).toBe(2);
+      expect(getBaseAttackBonus(OSEClass.Halfling, 4)).toBe(2);
     });
 
     it('uses cleric progression for clerics', () => {
-      expect(getTHAC0(OSEClass.Cleric, 4)).toBe(19);
-      expect(getTHAC0(OSEClass.Cleric, 5)).toBe(17);
-      expect(getTHAC0(OSEClass.Cleric, 9)).toBe(14);
+      expect(getBaseAttackBonus(OSEClass.Cleric, 4)).toBe(0);
+      expect(getBaseAttackBonus(OSEClass.Cleric, 5)).toBe(2);
+      expect(getBaseAttackBonus(OSEClass.Cleric, 9)).toBe(5);
     });
 
     it('uses mage/thief progression', () => {
-      expect(getTHAC0(OSEClass.MagicUser, 5)).toBe(19);
-      expect(getTHAC0(OSEClass.MagicUser, 6)).toBe(17);
-      expect(getTHAC0(OSEClass.Thief, 6)).toBe(17);
+      expect(getBaseAttackBonus(OSEClass.MagicUser, 5)).toBe(0);
+      expect(getBaseAttackBonus(OSEClass.MagicUser, 6)).toBe(2);
+      expect(getBaseAttackBonus(OSEClass.Thief, 6)).toBe(2);
     });
 
     it('clamps level to valid range', () => {
-      expect(getTHAC0(OSEClass.Fighter, 0)).toBe(19);
-      expect(getTHAC0(OSEClass.Fighter, 100)).toBe(10);
+      expect(getBaseAttackBonus(OSEClass.Fighter, 0)).toBe(0);
+      expect(getBaseAttackBonus(OSEClass.Fighter, 100)).toBe(9);
     });
   });
 
   describe('getMeleeAttackBonus', () => {
-    it('returns 0 for average STR (10)', () => {
+    it('returns base bonus for average STR (10)', () => {
       const char = { ...INITIAL_CHARACTER };
+      // Level 1 Fighter with STR 10 = base 0 + mod 0 = 0
       expect(getMeleeAttackBonus(char)).toBe(0);
     });
 
-    it('returns positive bonus for high STR', () => {
+    it('includes STR modifier', () => {
       const char = {
         ...INITIAL_CHARACTER,
         abilities: { ...INITIAL_CHARACTER.abilities, [AbilityScore.STR]: 16 },
       };
+      // Level 1 base 0 + STR 16 mod +2 = 2
       expect(getMeleeAttackBonus(char)).toBe(2);
     });
 
@@ -67,7 +68,18 @@ describe('thac0', () => {
         ...INITIAL_CHARACTER,
         abilities: { ...INITIAL_CHARACTER.abilities, [AbilityScore.STR]: 5 },
       };
+      // Level 1 base 0 + STR 5 mod -2 = -2
       expect(getMeleeAttackBonus(char)).toBe(-2);
+    });
+
+    it('includes base attack bonus from level', () => {
+      const char = {
+        ...INITIAL_CHARACTER,
+        level: 4,
+        abilities: { ...INITIAL_CHARACTER.abilities, [AbilityScore.STR]: 10 },
+      };
+      // Level 4 Fighter base 2 + STR 10 mod 0 = 2
+      expect(getMeleeAttackBonus(char)).toBe(2);
     });
 
     it('includes temporary modifiers', () => {
@@ -76,7 +88,7 @@ describe('thac0', () => {
         abilities: { ...INITIAL_CHARACTER.abilities, [AbilityScore.STR]: 14 },
         abilityModifiers: { ...INITIAL_CHARACTER.abilityModifiers, [AbilityScore.STR]: 2 },
       };
-      // Base 14 + 2 temp = 16 STR = +2 bonus
+      // Base 14 + 2 temp = 16 STR = +2 mod, level 1 base 0, total = 2
       expect(getMeleeAttackBonus(char)).toBe(2);
     });
   });
@@ -97,47 +109,30 @@ describe('thac0', () => {
   });
 
   describe('getMeleeDamageBonus', () => {
-    it('returns STR modifier', () => {
+    it('returns STR modifier only (no base attack)', () => {
       const char = {
         ...INITIAL_CHARACTER,
+        level: 10, // High level shouldn't affect damage
         abilities: { ...INITIAL_CHARACTER.abilities, [AbilityScore.STR]: 18 },
       };
       expect(getMeleeDamageBonus(char)).toBe(3);
     });
   });
 
-  describe('getTargetToHit', () => {
-    it('calculates target correctly', () => {
-      // THAC0 19 vs AC 9 = need 10
-      expect(getTargetToHit(19, 9)).toBe(10);
-      // THAC0 19 vs AC 5 = need 14
-      expect(getTargetToHit(19, 5)).toBe(14);
-      // THAC0 19 vs AC -2 = need 21, clamped to 20
-      expect(getTargetToHit(19, -2)).toBe(20);
-    });
-
-    it('clamps to minimum of 2', () => {
-      // THAC0 10 vs AC 15 = need -5, clamped to 2
-      expect(getTargetToHit(10, 15)).toBe(2);
-    });
-
-    it('clamps to maximum of 20', () => {
-      // THAC0 19 vs AC -5 = need 24, clamped to 20
-      expect(getTargetToHit(19, -5)).toBe(20);
-    });
-  });
-
   describe('doesAttackHit', () => {
-    it('returns true when roll meets target', () => {
-      // Need 10 to hit, rolled 10
-      expect(doesAttackHit(10, 19, 9)).toBe(true);
-      // Need 10 to hit, rolled 15
-      expect(doesAttackHit(15, 19, 9)).toBe(true);
+    it('returns true when roll meets target AC', () => {
+      // Roll 15 vs AC 15 = hit
+      expect(doesAttackHit(15, 15)).toBe(true);
     });
 
-    it('returns false when roll is below target', () => {
-      // Need 10 to hit, rolled 9
-      expect(doesAttackHit(9, 19, 9)).toBe(false);
+    it('returns true when roll exceeds target AC', () => {
+      // Roll 18 vs AC 12 = hit
+      expect(doesAttackHit(18, 12)).toBe(true);
+    });
+
+    it('returns false when roll is below target AC', () => {
+      // Roll 10 vs AC 15 = miss
+      expect(doesAttackHit(10, 15)).toBe(false);
     });
   });
 });

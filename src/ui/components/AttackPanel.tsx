@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { Character, Item, ItemCategory, CombatLogEntry } from '../../types';
 import {
-  getTHAC0,
   getMeleeAttackBonus,
   getRangedAttackBonus,
   getMeleeDamageBonus,
-  getTargetToHit,
+  doesAttackHit,
 } from '../../domain/rules/thac0';
 import { rollD20, parseAndRoll, formatRollResult } from '../../domain/rules/dice';
 import { formatModifier } from '../../domain/rules/modifiers';
@@ -39,7 +38,6 @@ const AttackPanel: React.FC<AttackPanelProps> = ({ character, onUpdate }) => {
   const selectedWeapon = equippedWeapons.find((w) => w.id === selectedWeaponId);
 
   // Combat stats
-  const thac0 = getTHAC0(character.class, character.level);
   const meleeBonus = getMeleeAttackBonus(character);
   const rangedBonus = getRangedAttackBonus(character);
   const damageBonus = getMeleeDamageBonus(character);
@@ -59,11 +57,10 @@ const AttackPanel: React.FC<AttackPanelProps> = ({ character, onUpdate }) => {
     const naturalRoll = rollD20();
     const attackTotal = naturalRoll + attackBonus;
 
-    // Determine hit
-    const targetNeeded = getTargetToHit(thac0, targetACNum);
+    // Determine hit (ascending AC: roll + bonus >= target AC)
     const isCritical = naturalRoll === 20;
     const isFumble = naturalRoll === 1;
-    const isHit = isCritical || (!isFumble && attackTotal >= targetNeeded);
+    const isHit = isCritical || (!isFumble && doesAttackHit(attackTotal, targetACNum));
 
     // Roll damage if hit
     let damageTotal: number | undefined;
@@ -117,9 +114,6 @@ const AttackPanel: React.FC<AttackPanelProps> = ({ character, onUpdate }) => {
           <h2 className="text-xs font-bold uppercase tracking-widest text-red-400">
             Attack
           </h2>
-          <div className="ml-auto text-xs text-slate-500">
-            THAC0 {thac0}
-          </div>
         </div>
 
         {/* Weapon Selection */}

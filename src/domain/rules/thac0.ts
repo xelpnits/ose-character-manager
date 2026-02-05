@@ -2,43 +2,42 @@ import { OSEClass, AbilityScore, Character } from '../../types';
 import { getModifier } from './modifiers';
 
 /**
- * OSE THAC0 (To Hit Armor Class 0) Tables by class and level.
+ * OSE Attack Bonus Tables by class and level.
  *
- * THAC0 uses descending AC system: lower AC is better.
- * To hit a target: roll d20 >= (THAC0 - target AC)
+ * Uses ascending AC system: roll d20 + attack bonus >= target AC to hit.
  *
  * Based on Old School Essentials Classic Fantasy rules.
  */
 
-// Fighter-type THAC0 progression (Fighter, Dwarf, Elf, Halfling)
-const FIGHTER_THAC0: Record<number, number> = {
-  1: 19, 2: 19, 3: 19,
-  4: 17, 5: 17, 6: 17,
-  7: 14, 8: 14, 9: 14,
-  10: 12, 11: 12, 12: 12,
-  13: 10, 14: 10,
+// Fighter-type attack bonus progression (Fighter, Dwarf, Elf, Halfling)
+const FIGHTER_ATTACK_BONUS: Record<number, number> = {
+  1: 0, 2: 0, 3: 0,
+  4: 2, 5: 2, 6: 2,
+  7: 5, 8: 5, 9: 5,
+  10: 7, 11: 7, 12: 7,
+  13: 9, 14: 9,
 };
 
-// Cleric THAC0 progression
-const CLERIC_THAC0: Record<number, number> = {
-  1: 19, 2: 19, 3: 19, 4: 19,
-  5: 17, 6: 17, 7: 17, 8: 17,
-  9: 14, 10: 14, 11: 14, 12: 14,
-  13: 12, 14: 12,
+// Cleric attack bonus progression
+const CLERIC_ATTACK_BONUS: Record<number, number> = {
+  1: 0, 2: 0, 3: 0, 4: 0,
+  5: 2, 6: 2, 7: 2, 8: 2,
+  9: 5, 10: 5, 11: 5, 12: 5,
+  13: 7, 14: 7,
 };
 
-// Magic-User/Thief THAC0 progression
-const MAGE_THIEF_THAC0: Record<number, number> = {
-  1: 19, 2: 19, 3: 19, 4: 19,
-  5: 19, 6: 17, 7: 17, 8: 17,
-  9: 17, 10: 14, 11: 14, 12: 14,
-  13: 14, 14: 12,
+// Magic-User/Thief attack bonus progression
+const MAGE_THIEF_ATTACK_BONUS: Record<number, number> = {
+  1: 0, 2: 0, 3: 0, 4: 0,
+  5: 0, 6: 2, 7: 2, 8: 2,
+  9: 2, 10: 5, 11: 5, 12: 5,
+  13: 5, 14: 7,
 };
 
 /**
- * Get base THAC0 for a class at a given level
+ * Get base attack bonus for a class at a given level
  */
-export function getTHAC0(classKey: OSEClass, level: number): number {
+export function getBaseAttackBonus(classKey: OSEClass, level: number): number {
   const clampedLevel = Math.max(1, Math.min(14, level));
 
   switch (classKey) {
@@ -46,38 +45,40 @@ export function getTHAC0(classKey: OSEClass, level: number): number {
     case OSEClass.Dwarf:
     case OSEClass.Elf:
     case OSEClass.Halfling:
-      return FIGHTER_THAC0[clampedLevel] ?? 19;
+      return FIGHTER_ATTACK_BONUS[clampedLevel] ?? 0;
 
     case OSEClass.Cleric:
-      return CLERIC_THAC0[clampedLevel] ?? 19;
+      return CLERIC_ATTACK_BONUS[clampedLevel] ?? 0;
 
     case OSEClass.MagicUser:
     case OSEClass.Thief:
-      return MAGE_THIEF_THAC0[clampedLevel] ?? 19;
+      return MAGE_THIEF_ATTACK_BONUS[clampedLevel] ?? 0;
 
     default:
-      return 19;
+      return 0;
   }
 }
 
 /**
  * Calculate the attack bonus for melee attacks
- * (STR modifier + any temp modifiers)
+ * (Base + STR modifier + any temp modifiers)
  */
 export function getMeleeAttackBonus(character: Character): number {
+  const baseBonus = getBaseAttackBonus(character.class, character.level);
   const baseStr = character.abilities[AbilityScore.STR];
   const tempMod = character.abilityModifiers?.[AbilityScore.STR] ?? 0;
-  return getModifier(baseStr + tempMod);
+  return baseBonus + getModifier(baseStr + tempMod);
 }
 
 /**
  * Calculate the attack bonus for ranged attacks
- * (DEX modifier + any temp modifiers)
+ * (Base + DEX modifier + any temp modifiers)
  */
 export function getRangedAttackBonus(character: Character): number {
+  const baseBonus = getBaseAttackBonus(character.class, character.level);
   const baseDex = character.abilities[AbilityScore.DEX];
   const tempMod = character.abilityModifiers?.[AbilityScore.DEX] ?? 0;
-  return getModifier(baseDex + tempMod);
+  return baseBonus + getModifier(baseDex + tempMod);
 }
 
 /**
@@ -91,36 +92,20 @@ export function getMeleeDamageBonus(character: Character): number {
 }
 
 /**
- * Calculate the target number needed to hit on d20
- * Using descending AC: target = THAC0 - targetAC
+ * Determine if an attack roll hits (ascending AC system)
+ * Roll d20 + bonus >= target AC = hit
  *
- * @param thac0 - The attacker's THAC0
- * @param targetAC - The defender's Armor Class (descending)
- * @returns The number needed on d20 to hit
- */
-export function getTargetToHit(thac0: number, targetAC: number): number {
-  const target = thac0 - targetAC;
-  // Minimum of 2 (always miss on 1), maximum of 20 (always hit on 20)
-  return Math.max(2, Math.min(20, target));
-}
-
-/**
- * Determine if an attack roll hits
- *
- * @param roll - The d20 roll (including modifiers)
- * @param thac0 - The attacker's THAC0
- * @param targetAC - The defender's AC (descending)
+ * @param rollTotal - The d20 roll + all bonuses
+ * @param targetAC - The defender's AC (ascending)
  * @returns Whether the attack hits
  */
-export function doesAttackHit(roll: number, thac0: number, targetAC: number): boolean {
-  // Natural 20 always hits, natural 1 always misses
-  // But we're checking the modified roll here, so handle that in the caller
-  return roll >= getTargetToHit(thac0, targetAC);
+export function doesAttackHit(rollTotal: number, targetAC: number): boolean {
+  return rollTotal >= targetAC;
 }
 
 /**
- * Format THAC0 display string
+ * Format attack bonus display string
  */
-export function formatTHAC0(thac0: number): string {
-  return `THAC0 ${thac0}`;
+export function formatAttackBonus(bonus: number): string {
+  return bonus >= 0 ? `+${bonus}` : `${bonus}`;
 }
